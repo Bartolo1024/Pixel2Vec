@@ -1,0 +1,35 @@
+name: rect2vec
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - click
+  - cudatoolkit>=10.2
+  - h5py
+  - hdf5
+  - ignite
+  - numpy
+  - pillow
+  - pip
+  - python=3.8
+  - pytorch>=1.9.0
+  - pyyaml
+  - torchvision>=0.10.0
+  - tqdm
+  - yaml
+  - scikit-learn
+  - pandas
+  - seaborn
+  - pip:
+    - opencv-python
+    - pytest
+    - flake8
+    - git+https://github.com/stared/livelossplot
+    - yapf
+    - mypy
+    - psutil
+    - git+https://github.com/stared/pytorch-named-dims
+    - pre-commit
+    - ipython
+    - jupyter
+    - gitpython

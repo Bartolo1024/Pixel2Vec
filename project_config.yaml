@@ -1,0 +1,3 @@
+neptune_project: gearshift-ai/gearshift
+data_root: data/
+runs_directory: mlruns/

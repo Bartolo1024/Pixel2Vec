@@ -1,0 +1,11 @@
+data
+mlruns
+
+*.h5
+*.pth
+*.pth.tar
+
+.ipynb_checkpoints
+__pycache__
+*.pyc
+.idea/
