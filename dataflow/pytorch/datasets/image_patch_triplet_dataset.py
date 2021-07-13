@@ -99,10 +99,7 @@ class ImagePatchTripletDatset(Dataset):
         anchor = grid[mapping['h_idx'], mapping['w_idx']]
         anchor_idx = mapping['h_idx'] * grid.shape[1] + mapping['w_idx']
         positive_patch_idxs = dataflow.utils.random_index_from_area(
-            anchor_idx,
-            grid.shape[:2],
-            min_radius=self.min_positive_distance,
-            max_radius=self.max_positive_distance
+            anchor_idx, grid.shape[:2], min_radius=self.min_positive_distance, max_radius=self.max_positive_distance
         )
         positive = flattened_grid[positive_patch_idxs]
         negative_patch_idx = dataflow.utils.random_index_from_area(

@@ -7,8 +7,9 @@ from ignite.metrics.metric import Metric
 from torch.nn import functional as F
 
 from utils.annotation_samplers import MaskRandomSampler, SkeletonSampler
-from utils.centres_distance import (choose_best_idxes_with_cosine_similarity,
-                                    choose_best_idxes_with_euclidean_distances)
+from utils.centres_distance import (
+    choose_best_idxes_with_cosine_similarity, choose_best_idxes_with_euclidean_distances
+)
 
 EvaluatorOutputType = Tuple[torch.Tensor, List[List[Dict[str, Any]]]]
 

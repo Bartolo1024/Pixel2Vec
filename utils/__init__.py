@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from importlib import import_module
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Pattern
 
 import h5py as h5
 import torch
@@ -161,11 +161,9 @@ def join_path(*args, create: bool = False):
     return path
 
 
-def create_artifacts_dir(runs_dir: str, run_template: str = re.compile(r'(GEAR-)([0-9]+)')) -> str:
+def create_artifacts_dir(runs_dir: str, run_template: Pattern = re.compile(r'(GEAR-)([0-9]+)')) -> str:
     os.makedirs(runs_dir, exist_ok=True)
-    runs = [
-        re.match(run_template, run) for run in os.listdir(runs_dir) if re.match(run_template, run)
-    ]
+    runs = [re.match(run_template, run) for run in os.listdir(runs_dir) if re.match(run_template, run)]
     if len(runs) == 0:
         next_run_dir = 'GEAR-0'
     else:

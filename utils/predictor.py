@@ -3,9 +3,9 @@ from typing import Any, Dict
 import torch
 from torch import nn
 
-from dataflow.utils import (extract_patches_from_pil_image,
-                            extract_patches_from_tensor, merge_feature_maps,
-                            merge_grid_patches)
+from dataflow.utils import (
+    extract_patches_from_pil_image, extract_patches_from_tensor, merge_feature_maps, merge_grid_patches
+)
 from utils.restoration import get_transforms
 
 
@@ -60,7 +60,7 @@ class Predictor:
                 result = self.model(chunk.to(self.device))
                 ret.extend(result.unbind())
         ret = merge_grid_patches(ret, grid_size)
-        return ret
+        return ret.rename('C', 'H', 'W')
 
     def predict_on_sliced_images(self, img):
         img_size = img.size
@@ -72,4 +72,4 @@ class Predictor:
                 patch = patch.align_to('N', 'C', 'H', 'W').to(self.device)
                 feature_map = self.model(patch)
                 feature_maps.append(feature_map.cpu())
-        return merge_feature_maps(feature_maps, img_size, self.patch_size, self.patch_coverage)
+        return merge_feature_maps(feature_maps, img_size, self.patch_size, self.patch_coverage).rename('C', 'H', 'W')

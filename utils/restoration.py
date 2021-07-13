@@ -22,15 +22,12 @@ def restore_params(run_id: str, run_pattern: str = 'GEAR-{}') -> Dict:
     return d
 
 
-def restore_model(
-    model_spec: Dict, run_dir: str, weights: str
-):
+def restore_model(model_spec: Dict, run_dir: str, weights: str):
     """Restore model using given class and params, and load weights from storage or neptune
     Args:
         model_spec: directory that has model class (ex. models.simple_fcn.SimpleFCN) and dictionary parameters
         run_dir: run directory
         weights: weights filename
-        neptune_experiment: neptune experiment object
 
     Returns:
         nn.Module with loaded weights

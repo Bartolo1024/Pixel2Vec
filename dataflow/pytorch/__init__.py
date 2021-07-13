@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 import sklearn.model_selection
@@ -8,10 +7,9 @@ import torchvision.transforms
 from torch.utils.data.dataloader import DataLoader
 
 import dataflow.transforms
-from dataflow.pytorch.datasets.image_patch_triplet_dataset import \
-    ImagePatchTripletDatset
-from dataflow.utils import (extract_patches_from_pil_image,
-                            get_img_list_from_folder, read_images_from_folder)
+from dataflow.pytorch.datasets.image_patch_triplet_dataset import ImagePatchTripletDatset
+from dataflow.pytorch.datasets.image_list import ImageListInMemoryDataset
+from dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
 
 
 def warn_if_no_workers(func):
@@ -288,34 +286,3 @@ def create_sliced_images_dataflow(
         collate_fn=_images_collate_fn
     )
     return {'train': train_data_loader, 'val': test_data_loader}
-
-
-def _coco_collate(batch: List[Tuple[Any, List[Dict[str, Any]]]]):
-    tensors, annotations = list(zip(*batch))
-    return list(tensors), annotations
-
-
-@warn_if_no_workers
-def create_coco_dataflow(
-    root: str,
-    num_workers: int = 0,
-    annotations_file: str = 'anns.json',
-    **__,
-) -> Dict[str, Iterable[torch.Tensor]]:
-    """
-    Args:
-        root: directory with images
-        num_workers: num of processes for data flows
-        annotations_file: file with annotations
-        **__: not used keyword arguments
-
-    Returns:
-        Dict with iterable that returns images tensor with annotations
-    """
-    img_paths = get_img_list_from_folder(root)
-    annotations_file = os.path.join(root, annotations_file)
-    dataset = LightweightCoco(image_paths=img_paths, transform=lambda s: s, annotations_file=annotations_file)
-    data_loader = DataLoader(
-        dataset=dataset, batch_size=1, num_workers=num_workers, shuffle=False, collate_fn=_coco_collate
-    )
-    return {'cocoval': data_loader}

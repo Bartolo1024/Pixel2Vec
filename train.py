@@ -16,9 +16,10 @@ import utils.metrics.loss
 import utils.predictor
 from engines import evaluator as evaluator_module
 from engines import unsupervised
-from utils import (average_output_metrics, create_artifacts_dir,
-                   feature_map_saver, params, reduced_dimensions_visualizer,
-                   saver, load_project_config)
+from utils import (
+    average_output_metrics, create_artifacts_dir, feature_map_saver, params, reduced_dimensions_visualizer, saver,
+    load_project_config
+)
 from utils.metrics import triplet_dot_product_accuracy
 
 
@@ -82,26 +83,34 @@ def build_plugins(
     output_metrics_average_plugin = average_output_metrics.AverageOutputMetrics()
     optional_plugins: List[Any] = []
     best_metric_fn = min if choose_predictor_weights_by_metric == 'loss' else max
-    optional_plugins_kwargs = dict(
-        predictor=predictor,
-        use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
-        artifacts_dir=artifacts_dir,
-        visualization_images_dir=visualization_images_dir
-    )
     if store_predictions_on_the_end:
         logging.info('Attach final predictions plugin')
-        store_feature_map = feature_map_saver.FeatureMapSaver(**optional_plugins_kwargs)
+        store_feature_map = feature_map_saver.FeatureMapSaver(
+            predictor=predictor,
+            use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
+            artifacts_dir=artifacts_dir,
+            visualization_images_dir=visualization_images_dir
+        )
         optional_plugins.append(store_feature_map)
     if t_sne_visualizer:
         logging.info('Attach t-SNE visualization')
         t_sne_rgb_visualizer = reduced_dimensions_visualizer.ReducedDimensionsRGBVisualizer(
-            reduction_mode='t-SNE', downsampling_kernel=tsne_downsampling_kernel_size, **optional_plugins_kwargs
+            reduction_mode='t-SNE',
+            downsampling_kernel=tsne_downsampling_kernel_size,
+            predictor=predictor,
+            use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
+            artifacts_dir=artifacts_dir,
+            visualization_images_dir=visualization_images_dir
         )
         optional_plugins.append(t_sne_rgb_visualizer)
     if pca_visualizer:
         logging.info('Attach PCA visualization')
         pca_rgb_visualizer = reduced_dimensions_visualizer.ReducedDimensionsRGBVisualizer(
-            reduction_mode='PCA', **optional_plugins_kwargs
+            reduction_mode='PCA',
+            predictor=predictor,
+            use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
+            artifacts_dir=artifacts_dir,
+            visualization_images_dir=visualization_images_dir
         )
         optional_plugins.append(pca_rgb_visualizer)
     return [epoch_progress_bar, p_bar, output_metrics_average_plugin, *optional_plugins]
@@ -210,11 +219,7 @@ def main(
     os.makedirs(artifacts_dir, exist_ok=True)
 
     data_dir = os.path.join(project_config['data_root'], data_dir)
-    loaders = create_data_flow(
-        data_root=data_dir,
-        data_flow_params=data_flow['params'],
-        mode=training_mode
-    )
+    loaders = create_data_flow(data_root=data_dir, data_flow_params=data_flow['params'], mode=training_mode)
 
     # load model from ./models/name_of_some_model.py
     logging.info(f"create model from {model_spec['class']}")
@@ -233,7 +238,7 @@ def main(
         else unsupervised.create_single_img_trainer
     trainer = create_trainer(model=model, optimizer=optimizer, loss_fn=loss_fn, device=device)
 
-    logger = PlotLossesCallback(train_engine=trainer, outputs=('ExtremaPrinter',))
+    logger = PlotLossesCallback(train_engine=trainer, outputs=('ExtremaPrinter', ))
     predictor = utils.predictor.Predictor(model, training_mode, data_flow, device)
 
     evaluators = build_evaluators(

@@ -65,9 +65,7 @@ class GenerateRandomTriplets:
                 min_radius=self.min_positive_distance,
                 max_radius=self.max_positive_distance
             )
-            negative_patch_idx = self.choose_negative_patch(
-                anchor_idx, max_column_patches, max_row_patches
-            )
+            negative_patch_idx = self.choose_negative_patch(anchor_idx, max_column_patches, max_row_patches, grid)
             samples.append(
                 {
                     'anchor': grid[anchor_idx],

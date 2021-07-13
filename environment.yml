@@ -1,4 +1,4 @@
-name: rect2vec
+name: tilenet
 channels:
   - pytorch
   - defaults

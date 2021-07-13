@@ -1,7 +1,6 @@
 import torch
 from PIL import Image
-from torchvision.transforms import (RandomHorizontalFlip, RandomVerticalFlip,
-                                    ToTensor)
+from torchvision.transforms import (RandomHorizontalFlip, RandomVerticalFlip, ToTensor)
 
 import dataflow.transforms
 

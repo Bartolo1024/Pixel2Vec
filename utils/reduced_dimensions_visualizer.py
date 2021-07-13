@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import PIL.Image
@@ -65,7 +65,7 @@ class ReducedDimensionsRGBVisualizer:
     def __init__(
         self,
         predictor: Predictor,
-        use_metrics: Dict[str, Callable[[float], bool]],
+        use_metrics: Dict[str, Any],
         artifacts_dir: str,
         visualization_images_dir: str,
         out_image_scale: float = .12,
