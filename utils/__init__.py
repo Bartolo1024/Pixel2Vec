@@ -161,7 +161,7 @@ def join_path(*args, create: bool = False):
     return path
 
 
-def create_artifacts_dir(runs_dir: str, run_template: str = re.compile(r'(GEAR-)([0-9]+)')):
+def create_artifacts_dir(runs_dir: str, run_template: str = re.compile(r'(GEAR-)([0-9]+)')) -> str:
     os.makedirs(runs_dir, exist_ok=True)
     runs = [
         re.match(run_template, run) for run in os.listdir(runs_dir) if re.match(run_template, run)
@@ -172,5 +172,6 @@ def create_artifacts_dir(runs_dir: str, run_template: str = re.compile(r'(GEAR-)
         last_run_match = max(runs, key=lambda r: int(r.group(2)))
         next_run_id = int(last_run_match.group(2)) + 1
         next_run_dir = last_run_match.group(1) + str(next_run_id)
+    next_run_dir = join_path(runs_dir, next_run_dir)
     os.makedirs(next_run_dir)
-    return join_path(runs_dir, next_run_dir)
+    return next_run_dir
