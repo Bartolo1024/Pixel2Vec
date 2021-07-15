@@ -7,18 +7,24 @@ jobs:
   autoyapf:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
         with:
-          ref: ${{ github.head_ref }}
-      - name: autoyapf
-        id: autoyapf
-        uses: mritunjaysharma394/autoyapf@v2
-        with:
-          args: -r -i .
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install isort
+          pip install yapf
       - name: autoisort
         shell: bash -l {0}
         run: |
           isort .
+      - name: yapf
+        id: yapf
+        uses: diegovalenzuelaiturra/yapf-action@v0.0.1
+        with:
+          args: . --recursive --diff
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
