@@ -135,6 +135,8 @@ def main(data_dir: str,
     trainer.logger.setLevel(logging.ERROR)
     trainer.run(loaders['train'],
 
+
+
                 max_epochs=max_epochs)
 
 
