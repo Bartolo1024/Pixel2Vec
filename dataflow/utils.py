@@ -15,26 +15,24 @@ import dataflow.transforms
 _IMG_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff']
 
 
-def extract_patches_from_numpy_array(
-        img: ndarray, patch_size: Tuple[int, int]) -> List[ndarray]:
+def extract_patches_from_numpy_array(img: ndarray, patch_size: Tuple[int, int]) -> List[ndarray]:
     """
     shrink image into patches with no intersection area
     unfortunately extract_patches_2d from sklearn works randomly
     """
     assert img.shape[-1] == 3
     patch_shape = [*patch_size, img.shape[-1]]
-    grid = sk_ext_image.extract_patches(img,
-                                        patch_shape,
-                                        extraction_step=patch_shape).reshape(
-                                            -1, *patch_shape)
+    grid = sk_ext_image.extract_patches(img, patch_shape, extraction_step=patch_shape).reshape(-1, *patch_shape)
     return grid
 
 
-def extract_patches_from_tensor(img: torch.Tensor,
-                                patch_size: Tuple[int, int],
-                                step: Optional[Tuple[int, int]] = None,
-                                pad: Optional[List[int]] = None,
-                                flatten: bool = True) -> torch.Tensor:
+def extract_patches_from_tensor(
+    img: torch.Tensor,
+    patch_size: Tuple[int, int],
+    step: Optional[Tuple[int, int]] = None,
+    pad: Optional[List[int]] = None,
+    flatten: bool = True
+) -> torch.Tensor:
     """
     Args:
         img tensor: in CHW format
@@ -66,8 +64,7 @@ def extract_patches_from_tensor(img: torch.Tensor,
         return grid.rename('grid_height', 'grid_width', 'C', 'H', 'W')
 
 
-def merge_grid_patches(grid: List[torch.Tensor],
-                       grid_size: Tuple[int, int]) -> torch.Tensor:
+def merge_grid_patches(grid: List[torch.Tensor], grid_size: Tuple[int, int]) -> torch.Tensor:
     """
     Args:
         grid: List of tensors of shape ['C', 'H', 'W']
@@ -84,25 +81,17 @@ def merge_grid_patches(grid: List[torch.Tensor],
     for idx, patch in enumerate(grid):
         w_idx = idx % max_w
         h_idx = (idx // max_w) % max_h
-        out[:, h_idx * patch_h:(h_idx + 1) * patch_h,
-            w_idx * patch_w:(w_idx + 1) * patch_w] = patch.rename(None)
+        out[:, h_idx * patch_h:(h_idx + 1) * patch_h, w_idx * patch_w:(w_idx + 1) * patch_w] = patch.rename(None)
     return out
 
 
-def set_adjacent(arr: Union[np.ndarray, torch.Tensor],
-                 patch_idx: int,
-                 value: int,
-                 radius: int = 1) -> np.ndarray:
+def set_adjacent(arr: Union[np.ndarray, torch.Tensor], patch_idx: int, value: int, radius: int = 1) -> np.ndarray:
     """Set cells that are adjacent to the given index to the given value"""
     num_of_patches_in_column, num_of_patches_in_row = arr.shape
     patch_column_idx = patch_idx // num_of_patches_in_row
     patch_row_idx = patch_idx % num_of_patches_in_row
-    arr[max(patch_column_idx -
-            radius, 0):min(patch_column_idx + 1 +
-                           radius, num_of_patches_in_column),
-        max(patch_row_idx -
-            radius, 0):min(patch_row_idx + 1 +
-                           radius, num_of_patches_in_row)] = value
+    arr[max(patch_column_idx - radius, 0):min(patch_column_idx + 1 + radius, num_of_patches_in_column),
+        max(patch_row_idx - radius, 0):min(patch_row_idx + 1 + radius, num_of_patches_in_row)] = value
     return arr
 
 
@@ -126,11 +115,8 @@ def random_index_from_area(
     """
     num_of_patches_in_column, num_of_patches_in_row = max_patches
     idxes = np.arange(num_of_patches_in_column * num_of_patches_in_row)
-    flattened_weights = np.zeros(num_of_patches_in_column *
-                                 num_of_patches_in_row,
-                                 dtype=np.bool)
-    weights = flattened_weights.reshape(num_of_patches_in_column,
-                                        num_of_patches_in_row)
+    flattened_weights = np.zeros(num_of_patches_in_column * num_of_patches_in_row, dtype=np.bool)
+    weights = flattened_weights.reshape(num_of_patches_in_column, num_of_patches_in_row)
     weights = set_adjacent(weights, patch_idx, 1, max_radius)
     weights = set_adjacent(weights, patch_idx, 0, min_radius)
     if mask is not None and np.sum(weights * mask) > 0:
@@ -138,8 +124,7 @@ def random_index_from_area(
     return np.random.choice(idxes[flattened_weights])
 
 
-def compute_max_patches(img_size: Tuple[int, int], patch_size: Tuple[int,
-                                                                     int]):
+def compute_max_patches(img_size: Tuple[int, int], patch_size: Tuple[int, int]):
     """Compute patches count in column and row"""
     height, width = img_size
     patch_height, patch_width = patch_size
@@ -148,9 +133,7 @@ def compute_max_patches(img_size: Tuple[int, int], patch_size: Tuple[int,
     return max_column_patches, max_row_patches
 
 
-def get_img_list_from_folder(
-        img_folder: str,
-        img_extensions: Optional[List[str]] = None) -> List[str]:
+def get_img_list_from_folder(img_folder: str, img_extensions: Optional[List[str]] = None) -> List[str]:
     """Scan folder end return all images with specified extension"""
     paths = []
     if img_extensions is None:
@@ -171,45 +154,38 @@ def read_images_from_folder(img_folder: str,
 
 
 class PrepareImagePatchTriplets:
-    def __init__(self,
-                 device: torch.device,
-                 transform: Optional[Callable[[torch.Tensor],
-                                              torch.Tensor]] = None,
-                 **kwargs):
+    def __init__(
+        self, device: torch.device, transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs
+    ):
         """
         :param device - cuda or cpu torch device:
         :param transform - function for an each patch postprocessing:
         :param kwargs - keyword arguments for the triplet generator:
         """
-        self.triplets_generator = dataflow.transforms.GenerateRandomTriplets(
-            **kwargs)
+        self.triplets_generator = dataflow.transforms.GenerateRandomTriplets(**kwargs)
         self.patch_transform = transform if transform else torchvision.transforms.Compose(
             [
                 dataflow.transforms.RandomVerticalFlip(),
                 dataflow.transforms.RandomHorizontalFlip(),
                 dataflow.transforms.RandomBrightnessContrastAdjust(),
-            ])
+            ]
+        )
         self.device = device
 
-    def __call__(self, batch: List[torch.Tensor], *_,
-                 **__) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __call__(self, batch: List[torch.Tensor], *_, **__) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate triplets for all images, then concatenate it to three tensors"""
         triplets_batch = [self.triplets_generator(img) for img in batch]
         ret = {}
         for group_name in ['anchor', 'positive', 'negative']:
-            group = [
-                triplet[group_name] for img_triplets in triplets_batch
-                for triplet in img_triplets
-            ]
+            group = [triplet[group_name] for img_triplets in triplets_batch for triplet in img_triplets]
             group = [self.patch_transform(s) for s in group]
             group = torch.stack(group).to(self.device)
             ret[group_name] = group
         return ret['anchor'], ret['positive'], ret['negative']
 
 
-def extract_patches_from_pil_image(
-        img: PIL.Image.Image, patch_size: Tuple[int, int],
-        patch_coverage: int) -> List[PIL.Image.Image]:
+def extract_patches_from_pil_image(img: PIL.Image.Image, patch_size: Tuple[int, int],
+                                   patch_coverage: int) -> List[PIL.Image.Image]:
     """
     Args:
         img: PIL image
@@ -226,22 +202,18 @@ def extract_patches_from_pil_image(
     width, height = img.size
     extended_width = math.ceil(width / w_step) * w_step
     extended_height = math.ceil(height / h_step) * h_step
-    for start_col, end_col in zip(
-            range(0, extended_width, w_step),
-            range(w_step, extended_width + w_step, w_step)):
+    for start_col, end_col in zip(range(0, extended_width, w_step), range(w_step, extended_width + w_step, w_step)):
         for start_row, end_row in zip(
-                range(0, extended_height, h_step),
-                range(patch_height, extended_height + h_step, h_step)):
-            patch = img.crop(
-                (start_col, start_row, min(end_col,
-                                           width), min(end_row, height)))
+            range(0, extended_height, h_step), range(patch_height, extended_height + h_step, h_step)
+        ):
+            patch = img.crop((start_col, start_row, min(end_col, width), min(end_row, height)))
             patches.append(patch)
     return patches
 
 
-def merge_feature_maps(feature_maps: List[torch.Tensor], img_size: Tuple[int,
-                                                                         int],
-                       patch_size: Tuple[int, int], patch_coverage: int):
+def merge_feature_maps(
+    feature_maps: List[torch.Tensor], img_size: Tuple[int, int], patch_size: Tuple[int, int], patch_coverage: int
+):
     """
     Args:
         feature_maps: list of feature maps of shape ['C', 'H', 'W'] each
@@ -264,14 +236,11 @@ def merge_feature_maps(feature_maps: List[torch.Tensor], img_size: Tuple[int,
     extended_width = math.ceil(width / w_step) * w_step
     extended_height = math.ceil(height / h_step) * h_step
     ctr = 0
-    for start_col, end_col in zip(
-            range(0, extended_width, w_step),
-            range(w_step, extended_width + w_step, w_step)):
+    for start_col, end_col in zip(range(0, extended_width, w_step), range(w_step, extended_width + w_step, w_step)):
         for start_row, end_row in zip(
-                range(0, extended_height, h_step),
-                range(patch_height, extended_height + h_step, h_step)):
+            range(0, extended_height, h_step), range(patch_height, extended_height + h_step, h_step)
+        ):
             feature_map = feature_maps[ctr]
-            ret[:, start_row:min(end_row, height),
-                start_col:min(end_col, width)] = feature_map.rename(None)
+            ret[:, start_row:min(end_row, height), start_col:min(end_col, width)] = feature_map.rename(None)
             ctr += 1
     return ret

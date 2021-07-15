@@ -14,8 +14,7 @@ import yaml
 from torch.optim.optimizer import Optimizer
 
 
-def load_project_config(config_file: str = 'project_config.yaml',
-                        local_config_file: str = 'project_config.local.yaml'):
+def load_project_config(config_file: str = 'project_config.yaml', local_config_file: str = 'project_config.local.yaml'):
     """
     Args:
         config_file: config file available in git repository
@@ -119,23 +118,17 @@ def timer(process_name: str) -> Callable:
     return decorator_timer
 
 
-def get_optimizer(model: torch.nn.Module, optimizer: str, *args,
-                  **kwargs) -> Optimizer:
+def get_optimizer(model: torch.nn.Module, optimizer: str, *args, **kwargs) -> Optimizer:
     """Function find optimizer in torch.optim and create it using passed args"""
     return getattr(torch.optim, optimizer)(model.parameters(), *args, **kwargs)
 
 
 def build_loggers(loggers, **kwargs):
     loggers_module = 'utils.loggers'
-    return [
-        import_function('.'.join([loggers_module, logger]))(**kwargs)
-        for logger in loggers
-    ]
+    return [import_function('.'.join([loggers_module, logger]))(**kwargs) for logger in loggers]
 
 
-def dictionary_flatten(d: Dict[str, Any],
-                       parent_key: str = '',
-                       sep: str = '_'):
+def dictionary_flatten(d: Dict[str, Any], parent_key: str = '', sep: str = '_'):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -143,10 +136,8 @@ def dictionary_flatten(d: Dict[str, Any],
             items.extend(dictionary_flatten(v, new_key, sep=sep).items())
         elif isinstance(v, list) and isinstance(v[0], dict):
             for idx, el in enumerate(v):
-                sub_dict = dict((f'{idx}_{sub_key}', sub_val)
-                                for sub_key, sub_val in el.items())
-                items.extend(
-                    dictionary_flatten(sub_dict, new_key, sep=sep).items())
+                sub_dict = dict((f'{idx}_{sub_key}', sub_val) for sub_key, sub_val in el.items())
+                items.extend(dictionary_flatten(sub_dict, new_key, sep=sep).items())
         else:
             items.append((new_key, v))
     return dict(items)
@@ -170,14 +161,9 @@ def join_path(*args, create: bool = False):
     return path
 
 
-def create_artifacts_dir(
-    runs_dir: str,
-    run_template: Pattern = re.compile(r'(GEAR-)([0-9]+)')) -> str:
+def create_artifacts_dir(runs_dir: str, run_template: Pattern = re.compile(r'(GEAR-)([0-9]+)')) -> str:
     os.makedirs(runs_dir, exist_ok=True)
-    runs = [
-        re.match(run_template, run) for run in os.listdir(runs_dir)
-        if re.match(run_template, run)
-    ]
+    runs = [re.match(run_template, run) for run in os.listdir(runs_dir) if re.match(run_template, run)]
     if len(runs) == 0:
         next_run_dir = 'GEAR-0'
     else:

@@ -12,8 +12,7 @@ import utils.epoch_progress_bar
 import utils.metrics.loss
 import utils.predictor
 from engines import evaluator as evaluator_module
-from utils import (average_output_metrics, feature_map_saver,
-                   reduced_dimensions_visualizer)
+from utils import (average_output_metrics, feature_map_saver, reduced_dimensions_visualizer)
 from utils.metrics import triplet_dot_product_accuracy
 
 
@@ -31,28 +30,26 @@ def create_data_flow(
     """
     logging.info('load data')
     if mode == 'patches':
-        loaders = dataflow.create_patches_dataflow(root=data_root,
-                                                   **data_flow_params)
+        loaders = dataflow.create_patches_dataflow(root=data_root, **data_flow_params)
     elif mode == 'images':
-        loaders = dataflow.create_images_dataflow(root=data_root,
-                                                  **data_flow_params)
+        loaders = dataflow.create_images_dataflow(root=data_root, **data_flow_params)
     elif mode == 'sliced_images':
-        loaders = dataflow.create_sliced_images_dataflow(root=data_root,
-                                                         **data_flow_params)
+        loaders = dataflow.create_sliced_images_dataflow(root=data_root, **data_flow_params)
     else:
         raise NotImplementedError(f'{mode} mode not implemented')
     return loaders
 
 
 def build_plugins(
-        predictor: utils.predictor.Predictor,
-        artifacts_dir: str,
-        visualization_images_dir: str,
-        store_predictions_on_the_end: bool = True,
-        t_sne_visualizer: bool = True,
-        pca_visualizer: bool = True,
-        choose_predictor_weights_by_metric: str = 'val_dot_product_accuracy',
-        tsne_downsampling_kernel_size: Optional[int] = None):
+    predictor: utils.predictor.Predictor,
+    artifacts_dir: str,
+    visualization_images_dir: str,
+    store_predictions_on_the_end: bool = True,
+    t_sne_visualizer: bool = True,
+    pca_visualizer: bool = True,
+    choose_predictor_weights_by_metric: str = 'val_dot_product_accuracy',
+    tsne_downsampling_kernel_size: Optional[int] = None
+):
     """
     Args:
         predictor: predictor
@@ -67,11 +64,9 @@ def build_plugins(
     Returns:
         list with plugins for trainer - plugins have to be attached after evaluators
     """
-    epoch_progress_bar = utils.epoch_progress_bar.EpochProgressBar(
-        desc='Epochs: ')
+    epoch_progress_bar = utils.epoch_progress_bar.EpochProgressBar(desc='Epochs: ')
     p_bar = ProgressBar(persist=False, desc='Training epoch: ')
-    output_metrics_average_plugin = average_output_metrics.AverageOutputMetrics(
-    )
+    output_metrics_average_plugin = average_output_metrics.AverageOutputMetrics()
     optional_plugins: List[Any] = []
     best_metric_fn = min if choose_predictor_weights_by_metric == 'loss' else max
     if store_predictions_on_the_end:
@@ -80,7 +75,8 @@ def build_plugins(
             predictor=predictor,
             use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
             artifacts_dir=artifacts_dir,
-            visualization_images_dir=visualization_images_dir)
+            visualization_images_dir=visualization_images_dir
+        )
         optional_plugins.append(store_feature_map)
     if t_sne_visualizer:
         logging.info('Attach t-SNE visualization')
@@ -90,7 +86,8 @@ def build_plugins(
             predictor=predictor,
             use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
             artifacts_dir=artifacts_dir,
-            visualization_images_dir=visualization_images_dir)
+            visualization_images_dir=visualization_images_dir
+        )
         optional_plugins.append(t_sne_rgb_visualizer)
     if pca_visualizer:
         logging.info('Attach PCA visualization')
@@ -99,17 +96,13 @@ def build_plugins(
             predictor=predictor,
             use_metrics={choose_predictor_weights_by_metric: best_metric_fn},
             artifacts_dir=artifacts_dir,
-            visualization_images_dir=visualization_images_dir)
+            visualization_images_dir=visualization_images_dir
+        )
         optional_plugins.append(pca_rgb_visualizer)
-    return [
-        epoch_progress_bar, p_bar, output_metrics_average_plugin,
-        *optional_plugins
-    ]
+    return [epoch_progress_bar, p_bar, output_metrics_average_plugin, *optional_plugins]
 
 
-def create_metrics(metrics: Iterable[str], loss_fn: Callable[[Any],
-                                                             torch.Tensor],
-                   prefix: str) -> Dict[str, Metric]:
+def create_metrics(metrics: Iterable[str], loss_fn: Callable[[Any], torch.Tensor], prefix: str) -> Dict[str, Metric]:
     """
     Args:
         metrics: list of string metric names
@@ -123,8 +116,7 @@ def create_metrics(metrics: Iterable[str], loss_fn: Callable[[Any],
         if metric == 'loss':
             ret[f'{prefix}_{metric}'] = utils.metrics.loss.LossMetric(loss_fn)
         elif metric == 'dot_product_accuracy':
-            ret[f'{prefix}_{metric}'] = triplet_dot_product_accuracy.TripletDotProductAccuracy(
-            )
+            ret[f'{prefix}_{metric}'] = triplet_dot_product_accuracy.TripletDotProductAccuracy()
         else:
             raise NotImplementedError(f'Metric {metric} is not implemented')
     return ret
@@ -160,15 +152,9 @@ def build_evaluators(
         logging.info(f'create {loader_name} validation engine')
         _metrics = create_metrics(metrics, loss_fn, prefix=loader_name)
         model = predictor.model
-        evaluator = evaluator_module.Evaluator(model,
-                                               _metrics,
-                                               loaders[loader_name],
-                                               device,
-                                               mode=mode)
+        evaluator = evaluator_module.Evaluator(model, _metrics, loaders[loader_name], device, mode=mode)
         if attach_progress_bar:
-            evaluator.engine.attach(
-                ProgressBar(persist=False,
-                            desc=f'Evaluation on the {loader_name} loader: '))
+            evaluator.engine.attach(ProgressBar(persist=False, desc=f'Evaluation on the {loader_name} loader: '))
         evaluator.engine.attach(logger)
         evaluators[loader_name] = evaluator
     return evaluators
