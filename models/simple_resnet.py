@@ -4,31 +4,26 @@ import torch
 from pytorch_named_dims import nm
 from torch import nn
 
-__ALL__ = [
-    'BaseResBlock', 'PreActivationResBlock', 'BottleneckResBlock',
-    'SimpleResNet'
-]
+__ALL__ = ['BaseResBlock', 'PreActivationResBlock', 'BottleneckResBlock', 'SimpleResNet']
 
 
 class BaseResBlock(nn.Module):
     """
     Original implementation of the ResNet block with skip options for batch norm and last activation
     """
-    def __init__(self,
-                 features: int,
-                 dilation: int = 1,
-                 kernel_size: int = 3,
-                 use_batch_norm: bool = False,
-                 block_output_activation: bool = True,
-                 block_gain: float = 1.):
+    def __init__(
+        self,
+        features: int,
+        dilation: int = 1,
+        kernel_size: int = 3,
+        use_batch_norm: bool = False,
+        block_output_activation: bool = True,
+        block_gain: float = 1.
+    ):
         super(BaseResBlock, self).__init__()
         padding = kernel_size // 2 + dilation // 2
         block = [
-            nm.Conv2d(features,
-                      features,
-                      kernel_size=kernel_size,
-                      padding=padding,
-                      dilation=dilation),
+            nm.Conv2d(features, features, kernel_size=kernel_size, padding=padding, dilation=dilation),
             nm.ReLU(),
             nm.BatchNorm2d(features) if use_batch_norm else nn.Sequential(),
             nm.Conv2d(features, features, kernel_size=1),
@@ -36,8 +31,7 @@ class BaseResBlock(nn.Module):
         ]
         self.block = nn.Sequential(*block)
         self.block_gain = block_gain
-        self.activation = nn.ReLU(
-        ) if block_output_activation else nn.Sequential()
+        self.activation = nn.ReLU() if block_output_activation else nn.Sequential()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
@@ -61,11 +55,7 @@ class PreActivationResBlock(nn.Module):
         block = [
             nm.BatchNorm2d(features) if use_batch_norm else nn.Sequential(),
             nm.ReLU(),
-            nm.Conv2d(features,
-                      features,
-                      kernel_size=kernel_size,
-                      padding=padding,
-                      dilation=dilation),
+            nm.Conv2d(features, features, kernel_size=kernel_size, padding=padding, dilation=dilation),
             nm.ReLU(),
             nm.BatchNorm2d(features) if use_batch_norm else nn.Sequential(),
             nm.Conv2d(features, features, kernel_size=1),
@@ -96,20 +86,14 @@ class BottleneckResBlock(nn.Module):
             nm.Conv2d(features, features, kernel_size=1),
             nm.BatchNorm2d(features) if use_batch_norm else nn.Sequential(),
             nm.ReLU(),
-            nm.Conv2d(features,
-                      bottleneck_features,
-                      kernel_size=kernel_size,
-                      padding=padding,
-                      dilation=dilation),
-            nm.BatchNorm2d(bottleneck_features)
-            if use_batch_norm else nn.Sequential(),
+            nm.Conv2d(features, bottleneck_features, kernel_size=kernel_size, padding=padding, dilation=dilation),
+            nm.BatchNorm2d(bottleneck_features) if use_batch_norm else nn.Sequential(),
             nm.ReLU(),
             nm.Conv2d(bottleneck_features, features, kernel_size=1),
             nm.BatchNorm2d(features) if use_batch_norm else nn.Sequential(),
         ]
         self.block = nn.Sequential(*block)
-        self.activation = nn.ReLU(
-        ) if block_output_activation else nn.Sequential()
+        self.activation = nn.ReLU() if block_output_activation else nn.Sequential()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
@@ -124,13 +108,15 @@ class SimpleResNet(nn.Module):
         'BottleneckResBlock': BottleneckResBlock
     }
 
-    def __init__(self,
-                 features: int,
-                 num_blocks: int,
-                 block_type: str = 'BaseResBlock',
-                 in_channels: int = 3,
-                 pool: int = 1,
-                 **block_kwargs):
+    def __init__(
+        self,
+        features: int,
+        num_blocks: int,
+        block_type: str = 'BaseResBlock',
+        in_channels: int = 3,
+        pool: int = 1,
+        **block_kwargs
+    ):
         """
         Args:
             features: number of features in each convolutional filter
@@ -144,9 +130,7 @@ class SimpleResNet(nn.Module):
         self.features = features
         self.stump = nm.Conv2d(in_channels, features, kernel_size=1)
         block_fn = self._AVAILABLE_BLOCKS[block_type]
-        blocks = [
-            block_fn(features, **block_kwargs) for _ in range(num_blocks)
-        ]
+        blocks = [block_fn(features, **block_kwargs) for _ in range(num_blocks)]
         self.blocks = nn.Sequential(*blocks)
         self.pool = nm.AdaptiveMaxPool2d(pool) if pool > 0 else None
 

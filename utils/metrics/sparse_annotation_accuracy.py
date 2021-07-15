@@ -7,24 +7,20 @@ from ignite.metrics.metric import Metric
 from torch.nn import functional as F
 
 from utils.annotation_samplers import MaskRandomSampler, SkeletonSampler
-from utils.centres_distance import (choose_best_idxes_with_cosine_similarity,
-                                    choose_best_idxes_with_euclidean_distances)
+from utils.centres_distance import (
+    choose_best_idxes_with_cosine_similarity, choose_best_idxes_with_euclidean_distances
+)
 
 EvaluatorOutputType = Tuple[torch.Tensor, List[List[Dict[str, Any]]]]
 
 
 class SparseAnnotationAccuracy(Metric):
-    def __init__(self,
-                 similarity_mode: str = 'cosine',
-                 annotation_mode: str = 'skeleton',
-                 *args,
-                 **kwargs):
+    def __init__(self, similarity_mode: str = 'cosine', annotation_mode: str = 'skeleton', *args, **kwargs):
         assert similarity_mode in ('cosine', 'euclidean')
         self._num_correct = 0
         self._num_examples = 0
         self._similarity_mode = similarity_mode
-        self.annotations_sampler = SkeletonSampler(
-        ) if annotation_mode == 'skeleton' else MaskRandomSampler(10)
+        self.annotations_sampler = SkeletonSampler() if annotation_mode == 'skeleton' else MaskRandomSampler(10)
         self._annotation_mode = annotation_mode
         super().__init__(*args, **kwargs)
 
@@ -35,14 +31,11 @@ class SparseAnnotationAccuracy(Metric):
     def update(self, output: EvaluatorOutputType):
         features_batch, annotations_batch = output
         img_width, img_height = annotations_batch[0][0]['image_size']
-        features_batch = F.interpolate(features_batch.rename(None),
-                                       (img_height, img_width)).rename(
-                                           'N', 'C', 'H', 'W')
+        features_batch = F.interpolate(features_batch.rename(None), (img_height, img_width)).rename('N', 'C', 'H', 'W')
         for features, annotations in zip(features_batch, annotations_batch):
             masks = self.create_masks(annotations)
             sparse_annotations = self.annotations_sampler(annotations)
-            predictions = self.create_predictions_map(sparse_annotations,
-                                                      features)
+            predictions = self.create_predictions_map(sparse_annotations, features)
             labels = self.masks_to_labels(masks, device=features.device)
             correct = predictions.eq(labels).view(-1)
             self._num_correct += torch.sum(correct).item()
@@ -62,19 +55,15 @@ class SparseAnnotationAccuracy(Metric):
         background_mask = np.zeros((img_height, img_width), dtype=np.int32)
         for ann in annotations:
             mask = np.zeros((img_height, img_width), dtype=np.int32)
-            contours = np.array(ann['segmentation']).reshape(-1, 1, 2).astype(
-                np.int32)
+            contours = np.array(ann['segmentation']).reshape(-1, 1, 2).astype(np.int32)
             mask = cv2.drawContours(mask, [contours], -1, 1., thickness=-1)
-            background_mask = cv2.drawContours(background_mask, [contours],
-                                               -1, (1.),
-                                               thickness=-1)
+            background_mask = cv2.drawContours(background_mask, [contours], -1, (1.), thickness=-1)
             masks.append(mask)
         background_mask = background_mask.astype(np.bool) ^ 1
         masks.insert(0, background_mask)
         return masks
 
-    def create_predictions_map(self, collected_data: List[Dict[str, int]],
-                               features: torch.Tensor):
+    def create_predictions_map(self, collected_data: List[Dict[str, int]], features: torch.Tensor):
         """
         Args:
             collected_data: list of points represented by dictionaries with x, y and label
@@ -86,11 +75,9 @@ class SparseAnnotationAccuracy(Metric):
         centres = [features[..., it['y'], it['x']] for it in collected_data]
         centres = torch.stack([el.rename(None) for el in centres])
         if self._similarity_mode == 'cosine':
-            best_idxes = choose_best_idxes_with_cosine_similarity(
-                centres, features)
+            best_idxes = choose_best_idxes_with_cosine_similarity(centres, features)
         else:
-            best_idxes = choose_best_idxes_with_euclidean_distances(
-                centres, features)
+            best_idxes = choose_best_idxes_with_euclidean_distances(centres, features)
         predictions = torch.zeros_like(best_idxes).rename(None)
         labels = [it['label'] for it in collected_data]
         for idx, label in enumerate(labels):
@@ -98,8 +85,7 @@ class SparseAnnotationAccuracy(Metric):
         return predictions
 
     @staticmethod
-    def masks_to_labels(masks: List[np.ndarray],
-                        device: torch.device) -> torch.Tensor:
+    def masks_to_labels(masks: List[np.ndarray], device: torch.device) -> torch.Tensor:
         """
         Args:
             masks: boolean masks

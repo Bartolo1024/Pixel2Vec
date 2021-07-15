@@ -9,10 +9,7 @@ from . import store_weights
 
 class PeriodicalH5NetSaver:
     """This saver saves the model on every n-th epoch"""
-    def __init__(self,
-                 save_period: int,
-                 out__dir: str,
-                 model_variable_name: str = 'model') -> None:
+    def __init__(self, save_period: int, out__dir: str, model_variable_name: str = 'model') -> None:
         """
         Args:
             save_period: n-th epoch
@@ -31,8 +28,7 @@ class PeriodicalH5NetSaver:
 
     def on_epoch_end(self, engine: Engine) -> None:
         """Store in every n-th epoch"""
-        if engine.state.epoch != 0 and (engine.state.epoch +
-                                        1) % self.save_period == 0:
+        if engine.state.epoch != 0 and (engine.state.epoch + 1) % self.save_period == 0:
             self.store(engine, engine.state.epoch)
 
     def store(self, engine: Engine, suffix: str = 'final') -> None:
@@ -42,11 +38,12 @@ class PeriodicalH5NetSaver:
 
 
 def create_best_metric_saver(
-        model: nn.Module,
-        trainer: Engine,
-        artifacts_dir: str,
-        metric_name: str,
-        mode: Callable[[float, float], float] = min) -> object:
+    model: nn.Module,
+    trainer: Engine,
+    artifacts_dir: str,
+    metric_name: str,
+    mode: Callable[[float, float], float] = min
+) -> object:
     """
     Fabric of Plugins, that are store model with the higher value of the chosen metric
         model: nn.Module to save
@@ -77,7 +74,8 @@ def create_best_metric_saver(
         filename_prefix='best',
         score_function=score_function,
         score_name=metric_name,
-        global_step_transform=global_step_from_engine(trainer))
+        global_step_transform=global_step_from_engine(trainer)
+    )
     # To be consistent between .pth and .pt format in next versions of ignite
     assert hasattr(handler, 'ext')
     handler.ext = 'pth'

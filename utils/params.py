@@ -19,11 +19,7 @@ def unpack_experiment_file(func: Callable) -> Callable:
     return _wrapper
 
 
-def check_param(param_name,
-                required=False,
-                param_type=None,
-                choices=None,
-                default=None):
+def check_param(param_name, required=False, param_type=None, choices=None, default=None):
     """function parameter validator"""
     def decorator(func):
         @functools.wraps(func)
