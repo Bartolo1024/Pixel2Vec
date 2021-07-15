@@ -1,4 +1,4 @@
-name: Python style
+name: Python tests
 
 on: [push]
 
@@ -31,11 +31,3 @@ jobs:
       shell: bash -l {0}
       run: |
         pytest .
-    - name: yapf
-      id: yapf
-      uses: diegovalenzuelaiturra/yapf-action@v0.0.1
-      with:
-        args: . --recursive --diff
-    - name: Fail if yapf made changes
-      if: steps.yapf.outputs.exit-code == 2
-      run: exit 1
