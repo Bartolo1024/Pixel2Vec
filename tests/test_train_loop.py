@@ -1,8 +1,10 @@
 import logging
 import os
-from typing import Iterable
+from typing import Any, Callable, Dict, Iterable
 
 import torch.utils.data
+from torch import nn
+from torch import optim
 from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
 from pytest import fixture
 
@@ -15,20 +17,12 @@ from utils import create_artifacts_dir, load_project_config, saver
 
 
 @fixture
-def experiment_config():
-    import yaml
-    with open('experiments/test.yaml', 'r') as f:
-        data = yaml.load(f)
-    return data
-
-
-@fixture
-def device():
+def device() -> torch.device:
     return torch.device('cpu')
 
 
 @fixture
-def data_flow_spec():
+def data_flow_spec() -> Dict[str, Any]:
     return {
         'params':
             {
@@ -47,15 +41,15 @@ def data_flow_spec():
 
 
 @fixture()
-def loaders(data_flow_spec):
+def loaders(data_flow_spec: Dict[str, Any]) -> Dict[str, Iterable]:
     data_dir = os.path.join('data', 'test')
     loaders = builders.create_data_flow(data_root=data_dir, data_flow_params=data_flow_spec['params'], mode='patches')
     return loaders
 
 
 @fixture()
-def model(device):
-    model_spec = {
+def model(device: torch.device) -> nn.Module:
+    model_spec: Dict[str, Any] = {
         'class': 'models.simple_resnet.SimpleResNet',
         'params': {
             'features': 16,
@@ -73,14 +67,14 @@ def model(device):
 
 
 @fixture
-def predictor(model, data_flow_spec, device):
+def predictor(model: nn.Module, data_flow_spec: Dict[str, Any], device: torch.device) -> utils.predictor.Predictor:
     predictor = utils.predictor.Predictor(model, 'patches', data_flow_spec, device)
     return predictor
 
 
-@fixture()
-def optimizer(model):
-    optim_spec = {'optimizer': 'Adam', 'optimizer_params': {'lr': 0.0001}}
+@fixture
+def optimizer(model: nn.Module) -> optim.Optimizer:
+    optim_spec: Dict[str, Any] = {'optimizer': 'Adam', 'optimizer_params': {'lr': 0.0001}}
     # load model from ./models/name_of_some_model.py
     logging.info(f"create optimizer: {optim_spec['optimizer']}")
     optimizer = utils.get_optimizer(model, optim_spec['optimizer'], **optim_spec['optimizer_params'])
@@ -88,16 +82,18 @@ def optimizer(model):
 
 
 @fixture()
-def loss_fn(device):
-    loss_fn_spec = {'create_fn': 'losses.contrastive_loss.ContrastiveLoss', 'params': {}}
-    # load model from ./models/name_of_some_model.py
+def loss_fn(device: torch.device) -> Callable[[Any], torch.Tensor]:
+    loss_fn_spec: Dict[str, Any] = {'create_fn': 'losses.contrastive_loss.ContrastiveLoss', 'params': {}}
     # load losses from ./losses/name_of_some_losses.py
     logging.info(f"create loss function: {loss_fn_spec['create_fn']}")
     loss_fn = utils.import_function(loss_fn_spec['create_fn'])(**loss_fn_spec['params']).to(device)
     return loss_fn
 
 
-def test_train_engine(loaders, model, optimizer, loss_fn, predictor, device):
+def test_train_engine(
+    loaders: Dict[str, Iterable], model: nn.Module, optimizer: optim.Optimizer, loss_fn: Callable[[Any], torch.Tensor],
+    predictor: utils.predictor.Predictor, device: torch.device
+):
     data_dir: str = 'data/test/'
     max_epochs: int = 2
     training_mode: str = 'patches'

@@ -115,7 +115,7 @@ def random_index_from_area(
     """
     num_of_patches_in_column, num_of_patches_in_row = max_patches
     idxes = np.arange(num_of_patches_in_column * num_of_patches_in_row)
-    flattened_weights = np.zeros(num_of_patches_in_column * num_of_patches_in_row, dtype=np.bool)
+    flattened_weights = np.zeros(num_of_patches_in_column * num_of_patches_in_row, dtype=bool)
     weights = flattened_weights.reshape(num_of_patches_in_column, num_of_patches_in_row)
     weights = set_adjacent(weights, patch_idx, 1, max_radius)
     weights = set_adjacent(weights, patch_idx, 0, min_radius)

@@ -16,7 +16,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
          miniconda-version: "latest"
-         activate-environment: tilenet
+         activate-environment: pixel2vec
          environment-file: environment.yml
          python-version: 3.8
          auto-activate-base: false
