@@ -134,7 +134,10 @@ def main(data_dir: str,
     trainer.attach(*plugins)
     logging.info(f'start training with num epochs {max_epochs}')
     trainer.logger.setLevel(logging.ERROR)
-    trainer.run(loaders['train'], max_epochs=max_epochs)
+    trainer.run(
+
+
+        loaders['train'], max_epochs=max_epochs)
 
 
 if __name__ == '__main__':
