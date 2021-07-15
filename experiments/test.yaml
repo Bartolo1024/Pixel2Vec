@@ -1,9 +1,4 @@
-experiment_name: patch_similarity_classifier
-neptune_project: gearshift-ai/gearshift
-data_dir: minesweeper/
-tags:
-    - demo
-    - minesweeper
+data_dir: test/
 model_spec:
     class: models.simple_resnet.SimpleResNet
     params:
@@ -12,11 +7,10 @@ model_spec:
     optimizer: Adam
     optimizer_params:
         lr: 0.0001
-device: cuda
-max_epochs: 10
+max_epochs: 2
 data_flow:
     params:
-        batch_size: 128
+        batch_size: 16
         num_workers: 0
         normalization_stats:
             mean:
@@ -37,3 +31,6 @@ loss_fn_spec:
     create_fn: losses.contrastive_loss.ContrastiveLoss
     params: {}
 training_mode: patches
+metrics:
+    - 'dot_product_accuracy'
+    - 'loss'

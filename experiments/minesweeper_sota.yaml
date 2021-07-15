@@ -1,0 +1,34 @@
+data_dir: minesweeper/
+model_spec:
+    class: models.simple_resnet.SimpleResNet
+    params:
+        features: 16
+        num_blocks: 8
+    optimizer: Adam
+    optimizer_params:
+        lr: 0.0001
+device: cuda
+max_epochs: 10
+data_flow:
+    params:
+        batch_size: 128
+        num_workers: 0
+        normalization_stats:
+            mean:
+                - 0.5
+                - 0.5
+                - 0.5
+            std:
+                - 0.5
+                - 0.5
+                - 0.5
+        patch_size:
+            - 8
+            - 8
+        min_negative_distance: 3
+        min_positive_distance: 0
+        max_positive_distance: 2
+loss_fn_spec:
+    create_fn: losses.contrastive_loss.ContrastiveLoss
+    params: {}
+training_mode: patches
