@@ -10,9 +10,9 @@ from . import prepare_tensor_batch
 TripletBatch = Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
 
 
-def create_trainer(
-    step_fn: Callable[..., Dict[str, float]], model: nn.Module, device: Optional[device] = None
-) -> Engine:
+def create_trainer(step_fn: Callable[..., Dict[str, float]],
+                   model: nn.Module,
+                   device: Optional[device] = None) -> Engine:
     """Like from ignite.engine import create_supervised_trainer, but with custom attach func"""
     if device:
         model.to(device)
@@ -41,7 +41,8 @@ def create_triplet_trainer(
     optimizer: Optimizer,
     loss_fn: nn.Module,
     device: Optional[device] = None,
-    prepare_batch: Optional[Callable[[Sequence[torch.Tensor], torch.device], TripletBatch]] = None,
+    prepare_batch: Optional[Callable[[Sequence[torch.Tensor], torch.device],
+                                     TripletBatch]] = None,
 ) -> Engine:
     def step_fn(_: Engine, batch: Sequence[torch.Tensor]):
         model.train()
@@ -49,9 +50,11 @@ def create_triplet_trainer(
         if prepare_batch is not None:
             anchors, positives, negatives = prepare_batch(batch, device)
         else:
-            anchors, positives, negatives = prepare_tensor_batch(batch, device=device)
+            anchors, positives, negatives = prepare_tensor_batch(batch,
+                                                                 device=device)
         batch = torch.cat((anchors, positives, negatives))
-        anchors, positives, negatives = model(batch).flatten(['C', 'H', 'W'], 'C').chunk(3)
+        anchors, positives, negatives = model(batch).flatten(['C', 'H', 'W'],
+                                                             'C').chunk(3)
         loss = loss_fn(anchors, positives, negatives)
         loss.backward()
         optimizer.step()
@@ -65,7 +68,8 @@ def create_single_img_trainer(
     optimizer: Optimizer,
     loss_fn: nn.Module,
     device: Optional[device] = None,
-    prepare_batch: Optional[Callable[[Sequence[torch.Tensor], torch.device], torch.Tensor]] = None,
+    prepare_batch: Optional[Callable[[Sequence[torch.Tensor], torch.device],
+                                     torch.Tensor]] = None,
 ) -> Engine:
     def step_fn(_: Engine, batch: torch.Tensor):
         model.train()

@@ -7,7 +7,8 @@ import numpy as np
 
 class AnnotationSampler:
     @abstractmethod
-    def __call__(self, annotations: List[Dict[str, Any]]) -> List[Dict[str, int]]:
+    def __call__(self, annotations: List[Dict[str,
+                                              Any]]) -> List[Dict[str, int]]:
         """
         Args:
             annotations: coco annotations
@@ -28,7 +29,8 @@ class AnnotationSampler:
         """
         img_width, img_height = annotation['image_size']
         mask = np.zeros((img_height, img_width), dtype=np.int32)
-        contours = np.array(annotation['segmentation']).reshape(-1, 1, 2).astype(np.int32)
+        contours = np.array(annotation['segmentation']).reshape(
+            -1, 1, 2).astype(np.int32)
         mask = cv2.drawContours(mask, [contours], -1, 1., thickness=-1)
         return mask
 
@@ -41,7 +43,8 @@ class MaskRandomSampler(AnnotationSampler):
         """
         self._samples_per_class = samples_per_class
 
-    def __call__(self, annotations: List[Dict[str, Any]]) -> List[Dict[str, int]]:
+    def __call__(self, annotations: List[Dict[str,
+                                              Any]]) -> List[Dict[str, int]]:
         """
         Args:
             annotations: coco annotations
@@ -50,11 +53,13 @@ class MaskRandomSampler(AnnotationSampler):
             A list of dictionaries with x, y and label for each chosen point
         """
         collected_data = []
-        background_mask = np.zeros(annotations[0]['image_size'], dtype=np.int32)
+        background_mask = np.zeros(annotations[0]['image_size'],
+                                   dtype=np.int32)
         for ann_idx, ann in enumerate(annotations):
             mask = self.annotation_to_mask(ann)
             background_mask += mask
-            collected_data.extend(self.sample_points_from_mask(mask, ann_idx + 1))
+            collected_data.extend(
+                self.sample_points_from_mask(mask, ann_idx + 1))
         background_mask = background_mask.astype(np.bool) ^ 1
         collected_data.extend(self.sample_points_from_mask(background_mask, 0))
         return collected_data
@@ -64,7 +69,8 @@ class MaskRandomSampler(AnnotationSampler):
         img_height, img_width = mask.shape
         mask = mask.reshape(-1)
         for n in range(self._samples_per_class):
-            idx = np.random.choice(range(img_height * img_width), p=mask.reshape(-1) / mask.sum())
+            idx = np.random.choice(range(img_height * img_width),
+                                   p=mask.reshape(-1) / mask.sum())
             mask[idx] = 0.
             choosen_idxes.append(idx)
         return choosen_idxes
@@ -81,7 +87,8 @@ class MaskRandomSampler(AnnotationSampler):
 
 
 class SkeletonSampler(AnnotationSampler):
-    def __call__(self, annotations: List[Dict[str, Any]]) -> List[Dict[str, int]]:
+    def __call__(self, annotations: List[Dict[str,
+                                              Any]]) -> List[Dict[str, int]]:
         """
         Args:
             annotations: coco annotations
@@ -96,7 +103,8 @@ class SkeletonSampler(AnnotationSampler):
             mask = self.annotation_to_mask(ann)
             background_mask += mask
             skeleton = self.get_skeleton(mask)
-            collected_data.extend(self._skeleton_to_points(skeleton, ann_idx + 1))
+            collected_data.extend(
+                self._skeleton_to_points(skeleton, ann_idx + 1))
         background_mask = background_mask.astype(np.bool) ^ 1
         skeleton = self.get_skeleton(background_mask)
         collected_data.extend(self._skeleton_to_points(skeleton, 0))
@@ -122,7 +130,8 @@ class SkeletonSampler(AnnotationSampler):
             img = eroded.copy()
         return skel
 
-    def _skeleton_to_points(self, skeleton: np.ndarray, label: int) -> List[Dict[str, int]]:
+    def _skeleton_to_points(self, skeleton: np.ndarray,
+                            label: int) -> List[Dict[str, int]]:
         """
         Args:
             skeleton: boolean mask with skeleton
@@ -132,5 +141,9 @@ class SkeletonSampler(AnnotationSampler):
             list of points defined by x, y, label
         """
         y_points, x_points = skeleton.astype(np.bool).nonzero()
-        collected_data = [{'x': x, 'y': y, 'label': label} for y, x in zip(y_points, x_points)]
+        collected_data = [{
+            'x': x,
+            'y': y,
+            'label': label
+        } for y, x in zip(y_points, x_points)]
         return collected_data

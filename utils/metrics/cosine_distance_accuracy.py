@@ -7,7 +7,9 @@ from torch.nn import CosineSimilarity
 
 
 class CosineDistanceAccuracy(metrics.Accuracy):
-    def __init__(self, threshold: float = .5, output_transform: Callable = lambda x: x):
+    def __init__(self,
+                 threshold: float = .5,
+                 output_transform: Callable = lambda x: x):
         super().__init__()
         self.similarity_metric = CosineSimilarity()
         self.threshold = threshold

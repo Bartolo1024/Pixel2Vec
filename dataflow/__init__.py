@@ -7,16 +7,18 @@ import torchvision.transforms
 from torch.utils.data.dataloader import DataLoader
 
 import dataflow.transforms
-from dataflow.datasets import ImagePatchTripletDatset
-from dataflow.datasets import ImageListInMemoryDataset
-from dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
+from dataflow.datasets import ImageListInMemoryDataset, ImagePatchTripletDatset
+from dataflow.utils import (extract_patches_from_pil_image,
+                            get_img_list_from_folder, read_images_from_folder)
 
 
 def warn_if_no_workers(func):
     def _wrapper(*args, **kwargs):
         num_workers = kwargs.get('num_workers')
         if num_workers == 0:
-            logging.warning(f'Dataloader from function {func} will be working with 0 workers!!! (bottleneck)')
+            logging.warning(
+                f'Dataloader from function {func} will be working with 0 workers!!! (bottleneck)'
+            )
         ret = func(*args, **kwargs)
         return ret
 
@@ -53,18 +55,22 @@ def build_transforms(
         test_transform.append(torchvision.transforms.Resize(size=img_size))
 
     if color_jitter_kwargs:
-        train_transform.append(torchvision.transforms.ColorJitter(**color_jitter_kwargs))
+        train_transform.append(
+            torchvision.transforms.ColorJitter(**color_jitter_kwargs))
 
     if to_grayscale:
         num_channels = len(normalization_stats['mean'])
-        train_transform.append(torchvision.transforms.Grayscale(num_output_channels=num_channels))
-        test_transform.append(torchvision.transforms.Grayscale(num_output_channels=num_channels))
+        train_transform.append(
+            torchvision.transforms.Grayscale(num_output_channels=num_channels))
+        test_transform.append(
+            torchvision.transforms.Grayscale(num_output_channels=num_channels))
 
     train_transform.append(torchvision.transforms.ToTensor())
     test_transform.append(torchvision.transforms.ToTensor())
 
     if crop_percentage <= 0.99:
-        train_crop = dataflow.transforms.BlotRightBottomWithAverageEdgeValue(crop_percentage)
+        train_crop = dataflow.transforms.BlotRightBottomWithAverageEdgeValue(
+            crop_percentage)
         train_transform.append(train_crop)
         test_crop = dataflow.transforms.CropRightBottom(crop_percentage)
         test_transform.append(test_crop)
@@ -74,10 +80,12 @@ def build_transforms(
     normalizer = torchvision.transforms.Normalize(**normalization_stats)
     train_transform.append(normalizer)
     test_transform.append(normalizer)
-    return torchvision.transforms.Compose(train_transform), torchvision.transforms.Compose(test_transform)
+    return torchvision.transforms.Compose(
+        train_transform), torchvision.transforms.Compose(test_transform)
 
 
-def _patches_collate_fn(batch: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]):
+def _patches_collate_fn(batch: List[Tuple[torch.Tensor, torch.Tensor,
+                                          torch.Tensor]]):
     anchors, positives, negatives = zip(*batch)
     anchors = torch.stack([t.rename(None) for t in anchors])
     positives = torch.stack([t.rename(None) for t in positives])
@@ -119,34 +127,34 @@ def create_patches_dataflow(
     """
     img_paths = get_img_list_from_folder(root)
     train_test_split_fn = sklearn.model_selection.train_test_split if not validation_crop_percentage else do_not_split
-    train_paths, test_paths = train_test_split_fn(img_paths, test_size=test_size, random_state=random_state)
-    train_transform, test_transform = build_transforms(normalization_stats, img_size, validation_crop_percentage)
+    train_paths, test_paths = train_test_split_fn(img_paths,
+                                                  test_size=test_size,
+                                                  random_state=random_state)
+    train_transform, test_transform = build_transforms(
+        normalization_stats, img_size, validation_crop_percentage)
 
-    patch_transform = torchvision.transforms.Compose(
-        [
-            dataflow.transforms.RandomVerticalFlip(),
-            dataflow.transforms.RandomHorizontalFlip(),
-            dataflow.transforms.RandomBrightnessContrastAdjust(),
-        ]
-    )
-    train_dataset = ImagePatchTripletDatset(
-        image_paths=train_paths, transform=train_transform, patch_transform=patch_transform, **dataset_kwargs
-    )
-    test_dataset = ImagePatchTripletDatset(image_paths=test_paths, transform=test_transform, **dataset_kwargs)
-    train_data_loader = DataLoader(
-        dataset=train_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=shuffle,
-        collate_fn=_patches_collate_fn
-    )
-    test_data_loader = DataLoader(
-        dataset=test_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False,
-        collate_fn=_patches_collate_fn
-    )
+    patch_transform = torchvision.transforms.Compose([
+        dataflow.transforms.RandomVerticalFlip(),
+        dataflow.transforms.RandomHorizontalFlip(),
+        dataflow.transforms.RandomBrightnessContrastAdjust(),
+    ])
+    train_dataset = ImagePatchTripletDatset(image_paths=train_paths,
+                                            transform=train_transform,
+                                            patch_transform=patch_transform,
+                                            **dataset_kwargs)
+    test_dataset = ImagePatchTripletDatset(image_paths=test_paths,
+                                           transform=test_transform,
+                                           **dataset_kwargs)
+    train_data_loader = DataLoader(dataset=train_dataset,
+                                   batch_size=batch_size,
+                                   num_workers=num_workers,
+                                   shuffle=shuffle,
+                                   collate_fn=_patches_collate_fn)
+    test_data_loader = DataLoader(dataset=test_dataset,
+                                  batch_size=batch_size,
+                                  num_workers=num_workers,
+                                  shuffle=False,
+                                  collate_fn=_patches_collate_fn)
     return {'train': train_data_loader, 'val': test_data_loader}
 
 
@@ -192,34 +200,29 @@ def create_images_dataflow(
     """
     img_paths = get_img_list_from_folder(root)
     train_test_split_fn = sklearn.model_selection.train_test_split if not validation_crop_percentage else do_not_split
-    train_paths, test_paths = train_test_split_fn(img_paths, test_size=test_size, random_state=random_state)
+    train_paths, test_paths = train_test_split_fn(img_paths,
+                                                  test_size=test_size,
+                                                  random_state=random_state)
     train_transform, test_transform = build_transforms(
         normalization_stats,
         img_size,
         validation_crop_percentage,
         color_jitter_kwargs=color_jitter_kwargs,
-        to_grayscale=to_grayscale
-    )
+        to_grayscale=to_grayscale)
     train_dataset = ImageListInMemoryDataset.from_paths(
-        image_paths=train_paths, transform=train_transform, **dataset_kwargs
-    )
+        image_paths=train_paths, transform=train_transform, **dataset_kwargs)
     test_dataset = ImageListInMemoryDataset.from_paths(
-        image_paths=test_paths, transform=test_transform, **dataset_kwargs
-    )
-    train_data_loader = DataLoader(
-        dataset=train_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=shuffle,
-        collate_fn=_images_collate_fn
-    )
-    test_data_loader = DataLoader(
-        dataset=test_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False,
-        collate_fn=_images_collate_fn
-    )
+        image_paths=test_paths, transform=test_transform, **dataset_kwargs)
+    train_data_loader = DataLoader(dataset=train_dataset,
+                                   batch_size=batch_size,
+                                   num_workers=num_workers,
+                                   shuffle=shuffle,
+                                   collate_fn=_images_collate_fn)
+    test_data_loader = DataLoader(dataset=test_dataset,
+                                  batch_size=batch_size,
+                                  num_workers=num_workers,
+                                  shuffle=False,
+                                  collate_fn=_images_collate_fn)
     return {'train': train_data_loader, 'val': test_data_loader}
 
 
@@ -262,27 +265,26 @@ def create_sliced_images_dataflow(
         img_size=patch_size,
         crop_percentage=1.,
         color_jitter_kwargs=color_jitter_kwargs,
-        to_grayscale=to_grayscale
-    )
+        to_grayscale=to_grayscale)
     images = read_images_from_folder(root, convert_to=convert_to)
-    images = [patch for img in images for patch in extract_patches_from_pil_image(img, patch_size, patch_coverage)]
+    images = [
+        patch for img in images for patch in extract_patches_from_pil_image(
+            img, patch_size, patch_coverage)
+    ]
     train_images, test_images = sklearn.model_selection.train_test_split(
-        images, test_size=test_size, random_state=random_state
-    )
-    train_dataset = ImageListInMemoryDataset.from_pil_images(images=train_images, transform=train_transform)
-    test_dataset = ImageListInMemoryDataset.from_pil_images(images=test_images, transform=test_transform)
-    train_data_loader = DataLoader(
-        dataset=train_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=shuffle,
-        collate_fn=_images_collate_fn
-    )
-    test_data_loader = DataLoader(
-        dataset=test_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=False,
-        collate_fn=_images_collate_fn
-    )
+        images, test_size=test_size, random_state=random_state)
+    train_dataset = ImageListInMemoryDataset.from_pil_images(
+        images=train_images, transform=train_transform)
+    test_dataset = ImageListInMemoryDataset.from_pil_images(
+        images=test_images, transform=test_transform)
+    train_data_loader = DataLoader(dataset=train_dataset,
+                                   batch_size=batch_size,
+                                   num_workers=num_workers,
+                                   shuffle=shuffle,
+                                   collate_fn=_images_collate_fn)
+    test_data_loader = DataLoader(dataset=test_dataset,
+                                  batch_size=batch_size,
+                                  num_workers=num_workers,
+                                  shuffle=False,
+                                  collate_fn=_images_collate_fn)
     return {'train': train_data_loader, 'val': test_data_loader}

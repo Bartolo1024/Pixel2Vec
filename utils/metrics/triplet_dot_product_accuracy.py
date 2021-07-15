@@ -20,8 +20,10 @@ class TripletDotProductAccuracy(metrics.Accuracy):
         anchor_embedding = anchor_embedding.align_to('N', 'X', 'C')
         positive_embedding = positive_embedding.align_to('N', 'C', 'Y')
         negative_embedding = negative_embedding.align_to('N', 'C', 'Y')
-        positive_prediction = anchor_embedding.bmm(positive_embedding).flatten(['N', 'X', 'Y'], 'N')
-        negative_prediction = anchor_embedding.bmm(negative_embedding).flatten(['N', 'X', 'Y'], 'N')
+        positive_prediction = anchor_embedding.bmm(positive_embedding).flatten(
+            ['N', 'X', 'Y'], 'N')
+        negative_prediction = anchor_embedding.bmm(negative_embedding).flatten(
+            ['N', 'X', 'Y'], 'N')
         correct = positive_prediction > negative_prediction
 
         self._num_correct += correct.sum().item()

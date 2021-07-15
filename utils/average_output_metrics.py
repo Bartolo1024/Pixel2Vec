@@ -13,7 +13,8 @@ class AverageOutputMetrics:
         self.metrics: Dict[str, List[float]] = {}
 
     def attach(self, engine: Engine):
-        engine.add_event_handler(Events.ITERATION_COMPLETED, self.on_iteration_end)
+        engine.add_event_handler(Events.ITERATION_COMPLETED,
+                                 self.on_iteration_end)
         engine.add_event_handler(Events.EPOCH_COMPLETED, self.on_epoch_end)
 
     def on_iteration_end(self, engine: Engine):
@@ -31,5 +32,6 @@ class AverageOutputMetrics:
         """Create metrics with an average of each cached value"""
         for key, val in self.metrics.items():
             num_batches = len(val)
-            engine.state.metrics[f'online_epoch_{key}'] = sum(val) / num_batches
+            engine.state.metrics[f'online_epoch_{key}'] = sum(
+                val) / num_batches
         self.reset()

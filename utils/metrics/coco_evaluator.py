@@ -7,7 +7,11 @@ from pycocotools import coco, cocoeval
 class COCOEvaluator(metrics.Metric):
     """Convert predictions and targets to coco annotations, dump it to json and compute mAP using cocotools"""
     def __init__(self, class_names, output_transform):
-        self.categories = [{'supercategory': name, 'id': idx + 1, 'name': name} for idx, name in enumerate(class_names)]
+        self.categories = [{
+            'supercategory': name,
+            'id': idx + 1,
+            'name': name
+        } for idx, name in enumerate(class_names)]
         self.pred_annotations = {}
         self.gt_annotations = {}
         self.img_idx = 0
@@ -20,11 +24,18 @@ class COCOEvaluator(metrics.Metric):
         self.gt_annotations = self._init_annotations()
 
     def _init_annotations(self):
-        return {'info': {}, 'licenses': {}, 'images': [], 'annotations': [], 'categories': self.categories}
+        return {
+            'info': {},
+            'licenses': {},
+            'images': [],
+            'annotations': [],
+            'categories': self.categories
+        }
 
     def update(self, output):
         (pred_conts, prec_classes), annotations_batch = output
-        for contours, classes, annotations in zip(pred_conts, prec_classes, annotations_batch):
+        for contours, classes, annotations in zip(pred_conts, prec_classes,
+                                                  annotations_batch):
             image = {
                 'file_name': annotations['file_name'],
                 'width': annotations['width'],
@@ -33,13 +44,20 @@ class COCOEvaluator(metrics.Metric):
             }
             for cont, cls in zip(contours, classes):
                 ann = {
-                    'segmentation': [[int(val) for cont in contours for val in cont]],
-                    'iscrowd': 0,
-                    'image_id': self.img_idx,
-                    'category_id': int(cls),
-                    'score': 1.,
-                    'area': 1.,
-                    'id': self.pred_ann_idx
+                    'segmentation':
+                    [[int(val) for cont in contours for val in cont]],
+                    'iscrowd':
+                    0,
+                    'image_id':
+                    self.img_idx,
+                    'category_id':
+                    int(cls),
+                    'score':
+                    1.,
+                    'area':
+                    1.,
+                    'id':
+                    self.pred_ann_idx
                 }
                 self.pred_annotations['annotations'].append(ann)
                 self.pred_annotations['images'].append(image)

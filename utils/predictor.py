@@ -3,19 +3,19 @@ from typing import Any, Dict
 import torch
 from torch import nn
 
-from dataflow.utils import (
-    extract_patches_from_pil_image, extract_patches_from_tensor, merge_feature_maps, merge_grid_patches
-)
+from dataflow.utils import (extract_patches_from_pil_image,
+                            extract_patches_from_tensor, merge_feature_maps,
+                            merge_grid_patches)
 from utils.restoration import get_transforms
 
 
 class Predictor:
     def __init__(
-        self,
-        model: nn.Module,
-        mode: str,
-        data_flow_spec: Dict[str, Any],
-        device: torch.device = torch.device('cpu'),
+            self,
+            model: nn.Module,
+            mode: str,
+            data_flow_spec: Dict[str, Any],
+            device: torch.device = torch.device('cpu'),
     ):
         assert mode in ('images', 'patches', 'sliced_images')
         self.model = model
@@ -46,10 +46,13 @@ class Predictor:
 
     def single_inference(self, img):
         with torch.no_grad():
-            return self.model(img.align_to('N', 'C', 'H', 'W').to(self.device)).squeeze('N')
+            return self.model(
+                img.align_to('N', 'C', 'H', 'W').to(self.device)).squeeze('N')
 
     def predict_on_patches(self, img):
-        patches = extract_patches_from_tensor(img, self.patch_size, flatten=False)
+        patches = extract_patches_from_tensor(img,
+                                              self.patch_size,
+                                              flatten=False)
         grid_size = patches.shape[:2]
         patches = patches.flatten(['grid_height', 'grid_width'], 'N')
         batch_size = patches.shape[0]
@@ -64,7 +67,8 @@ class Predictor:
 
     def predict_on_sliced_images(self, img):
         img_size = img.size
-        patches = extract_patches_from_pil_image(img, self.patch_size, self.patch_coverage)
+        patches = extract_patches_from_pil_image(img, self.patch_size,
+                                                 self.patch_coverage)
         feature_maps = []
         with torch.no_grad():
             for patch in patches:
@@ -72,4 +76,5 @@ class Predictor:
                 patch = patch.align_to('N', 'C', 'H', 'W').to(self.device)
                 feature_map = self.model(patch)
                 feature_maps.append(feature_map.cpu())
-        return merge_feature_maps(feature_maps, img_size, self.patch_size, self.patch_coverage).rename('C', 'H', 'W')
+        return merge_feature_maps(feature_maps, img_size, self.patch_size,
+                                  self.patch_coverage).rename('C', 'H', 'W')

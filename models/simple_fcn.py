@@ -5,18 +5,19 @@ from torch import nn
 
 class SimpleFCN(nn.Module):
     """Simple fully convolutional VGG-like model"""
-    def __init__(
-        self,
-        depth: int = 4,
-        features: int = 64,
-        in_channels: int = 3,
-        use_batch_norms=False,
-        vgg_like_initialization: bool = False
-    ):
+    def __init__(self,
+                 depth: int = 4,
+                 features: int = 64,
+                 in_channels: int = 3,
+                 use_batch_norms=False,
+                 vgg_like_initialization: bool = False):
         super().__init__()
         body = []
         for idx in range(depth):
-            body.append(self.make_block(in_channels, features, use_batch_norms=use_batch_norms))
+            body.append(
+                self.make_block(in_channels,
+                                features,
+                                use_batch_norms=use_batch_norms))
             in_channels = features
             features *= 2
         features = features // 2
@@ -30,7 +31,9 @@ class SimpleFCN(nn.Module):
         return self.head(x)
 
     @staticmethod
-    def make_block(in_channels: int, features: int, use_batch_norms: bool = False):
+    def make_block(in_channels: int,
+                   features: int,
+                   use_batch_norms: bool = False):
         layers = [
             nm.Conv2d(in_channels, features, kernel_size=3, padding=1),
             nm.BatchNorm2d(features) if use_batch_norms else nn.Sequential(),
@@ -45,7 +48,9 @@ class SimpleFCN(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nm.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight,
+                                        mode='fan_out',
+                                        nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nm.BatchNorm2d):

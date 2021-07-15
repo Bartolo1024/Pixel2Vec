@@ -13,20 +13,19 @@ def clone(p: torch.Tensor) -> torch.Tensor:
 
 
 class ImagePatchTripletDatset(Dataset):
-    def __init__(
-        self,
-        image_paths: List[str],
-        patch_size: Tuple[int, int],
-        transform: Callable[[Any], torch.Tensor],
-        patch_transform: Callable[[torch.Tensor], torch.Tensor] = clone,
-        convert_to: str = 'RGB',
-        min_negative_distance: int = 1,
-        min_positive_distance: int = 0,
-        max_positive_distance: int = 1,
-        max_negative_retries: int = 100,
-        skip_background: bool = False,
-        repeat_transforms: bool = False
-    ):
+    def __init__(self,
+                 image_paths: List[str],
+                 patch_size: Tuple[int, int],
+                 transform: Callable[[Any], torch.Tensor],
+                 patch_transform: Callable[[torch.Tensor],
+                                           torch.Tensor] = clone,
+                 convert_to: str = 'RGB',
+                 min_negative_distance: int = 1,
+                 min_positive_distance: int = 0,
+                 max_positive_distance: int = 1,
+                 max_negative_retries: int = 100,
+                 skip_background: bool = False,
+                 repeat_transforms: bool = False):
         """
         Args:
             image_paths: path to images
@@ -58,7 +57,9 @@ class ImagePatchTripletDatset(Dataset):
     def reset(self):
         """Function that performs transform again on start of each epoch"""
         if self.repeat_transforms:
-            self.transformed_images = [self.transform(img) for img in self.images]
+            self.transformed_images = [
+                self.transform(img) for img in self.images
+            ]
             self.pre_compute_grids()
         self.patch_counter = 0
 
@@ -70,8 +71,11 @@ class ImagePatchTripletDatset(Dataset):
         self.grids: List[torch.Tensor] = []
         self.idx_mapping = {}
         patch_idx = 0
-        for grid_idx, img in tqdm.tqdm(enumerate(self.transformed_images), desc='Prepare grids'):
-            grid = dataflow.utils.extract_patches_from_tensor(img, self.patch_size, flatten=False)
+        for grid_idx, img in tqdm.tqdm(enumerate(self.transformed_images),
+                                       desc='Prepare grids'):
+            grid = dataflow.utils.extract_patches_from_tensor(img,
+                                                              self.patch_size,
+                                                              flatten=False)
             self.grids.append(grid)
             for h_idx, row in enumerate(grid):
                 for w_idx, col in enumerate(row):
@@ -85,7 +89,8 @@ class ImagePatchTripletDatset(Dataset):
         self.flattened_grids = [grid.flatten(0, 1) for grid in self.grids]
         self.max_patches = patch_idx
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __getitem__(
+            self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate triplets for provided index
         Returns:
             anchor defined by the index, positive patch that is close to the anchor, and negative patch that is far
@@ -99,14 +104,19 @@ class ImagePatchTripletDatset(Dataset):
         anchor = grid[mapping['h_idx'], mapping['w_idx']]
         anchor_idx = mapping['h_idx'] * grid.shape[1] + mapping['w_idx']
         positive_patch_idxs = dataflow.utils.random_index_from_area(
-            anchor_idx, grid.shape[:2], min_radius=self.min_positive_distance, max_radius=self.max_positive_distance
-        )
+            anchor_idx,
+            grid.shape[:2],
+            min_radius=self.min_positive_distance,
+            max_radius=self.max_positive_distance)
         positive = flattened_grid[positive_patch_idxs]
         negative_patch_idx = dataflow.utils.random_index_from_area(
-            anchor_idx, grid_size, min_radius=self.min_negative_distance, max_radius=max(grid.shape[:2])
-        )
+            anchor_idx,
+            grid_size,
+            min_radius=self.min_negative_distance,
+            max_radius=max(grid.shape[:2]))
         negative = flattened_grid[negative_patch_idx]
-        return self.patch_transform(anchor), self.patch_transform(positive), self.patch_transform(negative)
+        return self.patch_transform(anchor), self.patch_transform(
+            positive), self.patch_transform(negative)
 
     def open_image(self, path):
         """Open image and convert to format specified in the constructor"""

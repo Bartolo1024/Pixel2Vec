@@ -11,28 +11,29 @@ from dataflow import utils
 
 class InvertNormalization:
     """Invert normalization - convert to 0., 1. float tensor image"""
-    def __init__(self, normalization_stats: Dict[str, Tuple[float]], device: Optional[torch.device] = None):
+    def __init__(self,
+                 normalization_stats: Dict[str, Tuple[float]],
+                 device: Optional[torch.device] = None):
         self.mean = torch.tensor(normalization_stats['mean']).to(device)
         self.std = torch.tensor(normalization_stats['std']).to(device)
 
     def __call__(self, img: torch.Tensor) -> torch.Tensor:
         """Take CHW tensor and returns non normalized tensor with the same shape"""
-        return ((img * self.std[:, None, None] + self.mean[:, None, None])).clamp(0, 1)
+        return ((img * self.std[:, None, None] +
+                 self.mean[:, None, None])).clamp(0, 1)
 
 
 class GenerateRandomTriplets:
     """Convert one big image to a lot of random triplets witch anchor, a near patch and a patch which is far away"""
-    def __init__(
-        self,
-        num_of_triplets: int,
-        patch_size: Tuple[int, int],
-        min_negative_distance: int = 1,
-        min_positive_distance: int = 0,
-        max_positive_distance: int = 1,
-        skip_equal_negatives: bool = True,
-        max_negative_retries: int = 100,
-        skip_background: bool = False
-    ):
+    def __init__(self,
+                 num_of_triplets: int,
+                 patch_size: Tuple[int, int],
+                 min_negative_distance: int = 1,
+                 min_positive_distance: int = 0,
+                 max_positive_distance: int = 1,
+                 skip_equal_negatives: bool = True,
+                 max_negative_retries: int = 100,
+                 skip_background: bool = False):
         """
         :param num_of_triplets - number of generated triplets:
         :param patch_size - size of one img patch:
@@ -53,30 +54,33 @@ class GenerateRandomTriplets:
         _, img_h, img_w = img.shape
         grid = utils.extract_patches_from_tensor(img, self.patch_size)
         grid_idxes = list(range(len(grid)))
-        max_column_patches, max_row_patches = utils.compute_max_patches((img_h, img_w), self.patch_size)
+        max_column_patches, max_row_patches = utils.compute_max_patches(
+            (img_h, img_w), self.patch_size)
         padded_grid_idxes: List[int] = self._remove_margins(
-            grid_idxes, max_column_patches=max_column_patches, max_row_patches=max_row_patches
-        )
-        anchor_idxes = random.sample(padded_grid_idxes, min(self.num_of_triplets, len(padded_grid_idxes)))
+            grid_idxes,
+            max_column_patches=max_column_patches,
+            max_row_patches=max_row_patches)
+        anchor_idxes = random.sample(
+            padded_grid_idxes, min(self.num_of_triplets,
+                                   len(padded_grid_idxes)))
         samples: List[Dict[str, torch.Tensor]] = []
         for anchor_idx in anchor_idxes:
             positive_patch_idx = utils.random_index_from_area(
                 anchor_idx, (max_column_patches, max_row_patches),
                 min_radius=self.min_positive_distance,
-                max_radius=self.max_positive_distance
-            )
-            negative_patch_idx = self.choose_negative_patch(anchor_idx, max_column_patches, max_row_patches, grid)
-            samples.append(
-                {
-                    'anchor': grid[anchor_idx],
-                    'positive': grid[positive_patch_idx],
-                    'negative': grid[negative_patch_idx],
-                }
-            )
+                max_radius=self.max_positive_distance)
+            negative_patch_idx = self.choose_negative_patch(
+                anchor_idx, max_column_patches, max_row_patches, grid)
+            samples.append({
+                'anchor': grid[anchor_idx],
+                'positive': grid[positive_patch_idx],
+                'negative': grid[negative_patch_idx],
+            })
         return samples
 
     @staticmethod
-    def _remove_margins(grid_idxes: List[Any], max_column_patches: int, max_row_patches: int) -> List[Any]:
+    def _remove_margins(grid_idxes: List[Any], max_column_patches: int,
+                        max_row_patches: int) -> List[Any]:
         """Remove margin regions from flattened grid (grid indexes)"""
         grid_idxes = grid_idxes[max_row_patches:-max_row_patches]
         grid_idxes = grid_idxes[max_column_patches::]
@@ -95,8 +99,7 @@ class GenerateRandomTriplets:
             negative_patch_idx = utils.random_index_from_area(
                 anchor_idx, (max_column_patches, max_row_patches),
                 min_radius=self.min_negative_distance,
-                max_radius=max(max_column_patches, max_row_patches)
-            )
+                max_radius=max(max_column_patches, max_row_patches))
             ctr += 1
             if ctr > self.max_negative_retries:
                 logging.warning(
@@ -107,7 +110,10 @@ class GenerateRandomTriplets:
 
 
 class ExtractTripletsFromImage:
-    def __init__(self, patch_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs):
+    def __init__(self,
+                 patch_transform: Optional[Callable[[torch.Tensor],
+                                                    torch.Tensor]] = None,
+                 **kwargs):
         """
         :param transform - function for an each patch postprocessing:
         :param kwargs - keyword arguments for the triplet generator:
@@ -118,10 +124,11 @@ class ExtractTripletsFromImage:
                 RandomVerticalFlip(),
                 RandomHorizontalFlip(),
                 RandomBrightnessContrastAdjust(),
-            ]
-        )
+            ])
 
-    def __call__(self, img: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __call__(
+            self, img: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate triplets for all images, then concatenate it to three tensors"""
         triplets = self.triplets_generator(img)
         ret = {}
@@ -160,12 +167,10 @@ class RandomVerticalFlip:
 
 
 class RandomBrightnessContrastAdjust:
-    def __init__(
-        self,
-        alpha_range: Tuple[float, float] = (0.9, 1.1),
-        beta_range: Tuple[float, float] = (0., 0.1),
-        clamp_to_range: Optional[Tuple[float, float]] = None
-    ):
+    def __init__(self,
+                 alpha_range: Tuple[float, float] = (0.9, 1.1),
+                 beta_range: Tuple[float, float] = (0., 0.1),
+                 clamp_to_range: Optional[Tuple[float, float]] = None):
         """
         Args:
             alpha_range: range of image random gain
@@ -187,7 +192,8 @@ class RandomBrightnessContrastAdjust:
         min_alpha, max_alpha = self.alpha_range
         img *= random.random() * (max_alpha - min_alpha) + min_alpha
         min_beta, max_beta = self.beta_range
-        img += random.random() * (max_beta - min_beta) + min_beta * torch.mean(img)
+        img += random.random() * (max_beta -
+                                  min_beta) + min_beta * torch.mean(img)
         if self.clamp_to_range:
             return img.clamp(*self.clamp_to_range)
         return img
@@ -195,7 +201,9 @@ class RandomBrightnessContrastAdjust:
 
 class RandomRotateStraightAngle:
     """Random rotation 90 or -90 degrees"""
-    def __init__(self, probability: float = .5, negative_angle_probability: float = .5):
+    def __init__(self,
+                 probability: float = .5,
+                 negative_angle_probability: float = .5):
         self.probability = probability
         self.negative_angle_probability = negative_angle_probability
 
@@ -203,7 +211,8 @@ class RandomRotateStraightAngle:
         if random.random() >= self.probability:
             return x
         x = x.transpose(1, 2)
-        return x.flip(2) if random.random() < self.negative_angle_probability else x.flip(1)
+        return x.flip(2) if random.random(
+        ) < self.negative_angle_probability else x.flip(1)
 
 
 class BlotRightBottomWithAverageEdgeValue:
@@ -216,7 +225,8 @@ class BlotRightBottomWithAverageEdgeValue:
         self.crop_percentage = crop_percentage
 
     def __call__(self, x):
-        edge_value = (x[:, 0, :-1].mean() + x[:, :-1, -1].mean() + x[:, -1, 1:].mean() + x[:, 1:, 0].mean()) / 4
+        edge_value = (x[:, 0, :-1].mean() + x[:, :-1, -1].mean() +
+                      x[:, -1, 1:].mean() + x[:, 1:, 0].mean()) / 4
         _, h, w, = x.shape
         start_vertical = int(h * math.sqrt(self.crop_percentage))
         start_horizontal = int(w * math.sqrt(self.crop_percentage))
