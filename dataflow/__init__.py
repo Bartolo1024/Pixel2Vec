@@ -7,7 +7,8 @@ import torchvision.transforms
 from torch.utils.data.dataloader import DataLoader
 
 import dataflow.transforms
-from dataflow.datasets import ImageListInMemoryDataset, ImagePatchTripletDatset
+from dataflow.datasets.image_list import ImageListInMemoryDataset
+from dataflow.datasets.image_patch_triplet_dataset import ImagePatchTripletDatset
 from dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
 
 
