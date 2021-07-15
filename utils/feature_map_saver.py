@@ -51,7 +51,7 @@ def store_small_images_with_feature_maps(
     """
     image_paths = get_img_list_from_folder(images_dir)
     with h5.File(out_file_path, 'w') as hf:
-        for img_path in tqdm.tqdm(image_paths, unit='img', desc=f'feature maps computations'):
+        for img_path in tqdm.tqdm(image_paths, unit='img', desc='feature maps computations'):
             img_name = ''.join(img_path.split('/')[-1].split('.')[:-1])
             img_raw = PIL.Image.open(img_path).convert('RGB')
             feature_map = predictor(img_raw)
