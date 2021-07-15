@@ -3,10 +3,9 @@ import os
 from typing import Any, Callable, Dict, Iterable
 
 import torch.utils.data
-from torch import nn
-from torch import optim
 from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
 from pytest import fixture
+from torch import nn, optim
 
 import utils
 import utils.epoch_progress_bar
