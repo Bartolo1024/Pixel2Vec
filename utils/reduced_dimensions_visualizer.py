@@ -27,13 +27,17 @@ def get_projection(feature_map: torch.Tensor, projector: Union[TSNE, PCA]):
             PIL image with t-sne visualization
         """
     _, height, width = feature_map.shape
-    feature_vectors = feature_map.flatten(['H', 'W'], 'N').transpose('C', 'N').cpu().numpy()
+    feature_vectors = feature_map.flatten(['H', 'W'],
+                                          'N').transpose('C',
+                                                         'N').cpu().numpy()
     x_projected = projector.fit_transform(feature_vectors)
     grid = x_projected.reshape(height, width, 3)
     grid_min = grid.min()
     grid_max = grid.max()
-    projection_img = ((grid - grid_min) / (grid_max - grid_min) * 255).astype(np.uint8)
-    projection_img = PIL.Image.fromarray(projection_img).resize((width, height), resample=PIL.Image.NEAREST)
+    projection_img = ((grid - grid_min) / (grid_max - grid_min) * 255).astype(
+        np.uint8)
+    projection_img = PIL.Image.fromarray(projection_img).resize(
+        (width, height), resample=PIL.Image.NEAREST)
     return projection_img
 
 
@@ -87,7 +91,8 @@ class ReducedDimensionsRGBVisualizer:
         self.out_image_scale = out_image_scale
         assert reduction_mode in ('t-SNE', 'PCA')
         self.reduction_mode = reduction_mode
-        self.downsampling_kernel = nm.AvgPool2d(downsampling_kernel) if downsampling_kernel else None
+        self.downsampling_kernel = nm.AvgPool2d(
+            downsampling_kernel) if downsampling_kernel else None
         self.feature_map_reduction_fn = get_tsne_rgb if reduction_mode == 't-SNE' else get_pca_rgb
         self.predictor = predictor
 
@@ -99,11 +104,14 @@ class ReducedDimensionsRGBVisualizer:
         Notes:
             attach to the engine complete and exception events has to be attached after checkpointer
         """
-        engine.add_event_handler(Events.COMPLETED, self.choose_models_and_compute)
-        engine.add_event_handler(Events.EXCEPTION_RAISED, self.choose_models_and_compute)
+        engine.add_event_handler(Events.COMPLETED,
+                                 self.choose_models_and_compute)
+        engine.add_event_handler(Events.EXCEPTION_RAISED,
+                                 self.choose_models_and_compute)
 
     def choose_models_and_compute(self, *_):
-        metrics_with_the_best_weights = choose_best_weights(self.artifacts_dir, self.use_metrics)
+        metrics_with_the_best_weights = choose_best_weights(
+            self.artifacts_dir, self.use_metrics)
         logging.info(f'found best weights: {metrics_with_the_best_weights}')
         old_state_dict = self.predictor.model.state_dict()
         for metric_name, weights in metrics_with_the_best_weights.items():
@@ -119,20 +127,29 @@ class ReducedDimensionsRGBVisualizer:
             model_name: model identifier
         """
         image_paths = get_img_list_from_folder(self.visualization_images_dir)
-        os.makedirs(os.path.join(self.artifacts_dir, f'{self.reduction_mode}-rgb', model_name), exist_ok=True)
+        os.makedirs(os.path.join(self.artifacts_dir,
+                                 f'{self.reduction_mode}-rgb', model_name),
+                    exist_ok=True)
         for img_path in tqdm.tqdm(
-            image_paths, unit='img', desc=f'{self.reduction_mode} computations for: {model_name}'
-        ):
+                image_paths,
+                unit='img',
+                desc=f'{self.reduction_mode} computations for: {model_name}'):
             img_name = ''.join(img_path.split('/')[-1])
             raw_img = PIL.Image.open(img_path).convert('RGB')
             feature_map = self.predictor(raw_img)
             if self.downsampling_kernel:
-                feature_map = self.downsampling_kernel(feature_map.align_to('N', 'C', 'H', 'W')).squeeze('N')
-                logging.info(f'Reduction will be performed with downsampled feature map of shape {feature_map.shape}')
+                feature_map = self.downsampling_kernel(
+                    feature_map.align_to('N', 'C', 'H', 'W')).squeeze('N')
+                logging.info(
+                    f'Reduction will be performed with downsampled feature map of shape {feature_map.shape}'
+                )
             projected_img = self.feature_map_reduction_fn(feature_map)
-            self.save_matplotlib_results(raw_img, projected_img, model_name, img_name)
+            self.save_matplotlib_results(raw_img, projected_img, model_name,
+                                         img_name)
 
-    def save_matplotlib_results(self, source_img: PIL.Image, t_sne_img: PIL.Image, model_name: str, img_name: str):
+    def save_matplotlib_results(self, source_img: PIL.Image,
+                                t_sne_img: PIL.Image, model_name: str,
+                                img_name: str):
         """
         Args:
             source_img: input rgb image
@@ -151,5 +168,7 @@ class ReducedDimensionsRGBVisualizer:
         w_inches = int(w * self.out_image_scale)
         h_inches = int(h * self.out_image_scale)
         fig.set_size_inches(w_inches, h_inches, forward=True)
-        out_path = os.path.join(self.artifacts_dir, f'{self.reduction_mode}-rgb', model_name, img_name)
+        out_path = os.path.join(self.artifacts_dir,
+                                f'{self.reduction_mode}-rgb', model_name,
+                                img_name)
         plt.savefig(out_path, bbox_inches='tight')

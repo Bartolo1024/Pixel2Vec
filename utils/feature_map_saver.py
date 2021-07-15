@@ -15,7 +15,8 @@ from utils.predictor import Predictor
 from utils.restoration import choose_best_weights
 
 
-def pca_projection(feature_map: torch.Tensor, mask: torch.Tensor, num_components: int):
+def pca_projection(feature_map: torch.Tensor, mask: torch.Tensor,
+                   num_components: int):
     """
     Args:
         feature_map: tensor of shape ['C', 'H', 'W']
@@ -28,20 +29,23 @@ def pca_projection(feature_map: torch.Tensor, mask: torch.Tensor, num_components
     projector = PCA(n_components=num_components)
     _, height, width = feature_map.shape
     nonzero_h, nonzero_w = torch.nonzero(mask.rename(None), as_tuple=True)
-    feature_vectors = feature_map.rename(None)[:, nonzero_h, nonzero_w].transpose(0, 1).cpu()
+    feature_vectors = feature_map.rename(None)[:, nonzero_h,
+                                               nonzero_w].transpose(0,
+                                                                    1).cpu()
     x_projected = projector.fit_transform(feature_vectors)
     grid = torch.zeros(num_components, height, width)
-    grid[:, nonzero_h, nonzero_w] = torch.tensor(x_projected, dtype=torch.float).transpose(1, 0)
+    grid[:, nonzero_h,
+         nonzero_w] = torch.tensor(x_projected,
+                                   dtype=torch.float).transpose(1, 0)
     grid = grid.permute(1, 2, 0).numpy()
     return grid
 
 
 def store_small_images_with_feature_maps(
-    predictor: Predictor,
-    images_dir: str,
-    num_components: Optional[int] = None,
-    out_file_path: str = 'images_with_featuremaps.h5'
-):
+        predictor: Predictor,
+        images_dir: str,
+        num_components: Optional[int] = None,
+        out_file_path: str = 'images_with_featuremaps.h5'):
     """Compute feature maps for images from given directory and store it in hdf5 file
     Args:
         predictor: a callable class which transform a PIL.Image into a feature map
@@ -51,7 +55,9 @@ def store_small_images_with_feature_maps(
     """
     image_paths = get_img_list_from_folder(images_dir)
     with h5.File(out_file_path, 'w') as hf:
-        for img_path in tqdm.tqdm(image_paths, unit='img', desc=f'feature maps computations'):
+        for img_path in tqdm.tqdm(image_paths,
+                                  unit='img',
+                                  desc=f'feature maps computations'):
             img_name = ''.join(img_path.split('/')[-1].split('.')[:-1])
             img_raw = PIL.Image.open(img_path).convert('RGB')
             feature_map = predictor(img_raw)
@@ -59,7 +65,8 @@ def store_small_images_with_feature_maps(
             mask = torch.ones(feature_map.shape[-2:], dtype=torch.bool)
             feature_map = feature_map.cpu()
             if num_components:
-                feature_map = pca_projection(feature_map, mask, min(channels, num_components))
+                feature_map = pca_projection(feature_map, mask,
+                                             min(channels, num_components))
             else:
                 logging.info('PCA projection will be skipped')
                 feature_map = feature_map.align_to('H', 'W', 'C').numpy()
@@ -69,14 +76,12 @@ def store_small_images_with_feature_maps(
 
 
 class FeatureMapSaver:
-    def __init__(
-        self,
-        predictor: Predictor,
-        use_metrics: Dict[str, Any],
-        artifacts_dir: str,
-        visualization_images_dir: str,
-        num_features: Optional[int] = 16
-    ):
+    def __init__(self,
+                 predictor: Predictor,
+                 use_metrics: Dict[str, Any],
+                 artifacts_dir: str,
+                 visualization_images_dir: str,
+                 num_features: Optional[int] = 16):
         """
         Args:
             predictor: Callable predictor
@@ -102,15 +107,17 @@ class FeatureMapSaver:
         engine.add_event_handler(Events.EXCEPTION_RAISED, self.on_training_end)
 
     def on_training_end(self, *_):
-        metrics_with_the_best_weights = choose_best_weights(self.artifacts_dir, self.use_metrics)
+        metrics_with_the_best_weights = choose_best_weights(
+            self.artifacts_dir, self.use_metrics)
         logging.info(f'found best weights: {metrics_with_the_best_weights}')
         old_state_dict = self.predictor.model.state_dict()
         for metric_name, weights in metrics_with_the_best_weights.items():
             logging.info(f'loading best weights {weights}')
             state_dict = torch.load(os.path.join(self.artifacts_dir, weights))
             self.predictor.model.load_state_dict(state_dict)
-            out_path = os.path.join(self.artifacts_dir, f'model_best_{metric_name}_predictions.h5')
-            store_small_images_with_feature_maps(
-                self.predictor, self.visualization_images_dir, self.num_features, out_path
-            )
+            out_path = os.path.join(
+                self.artifacts_dir, f'model_best_{metric_name}_predictions.h5')
+            store_small_images_with_feature_maps(self.predictor,
+                                                 self.visualization_images_dir,
+                                                 self.num_features, out_path)
         self.predictor.model.load_state_dict(old_state_dict)

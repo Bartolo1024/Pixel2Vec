@@ -42,11 +42,12 @@ def create_supervised_evaluator(
     model: Union[nn.Module, Predictor],
     metrics: Dict[str, Metric],
     device: torch.device,
-    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool], torch.Tensor]],
+    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool],
+                                     torch.Tensor]],
     non_blocking: bool = False,
-    output_transform: Callable[[torch.Tensor, torch.Tensor, Any], Any] = lambda batch, features, annotations:
-    (features, annotations)
-):
+    output_transform: Callable[[torch.Tensor, torch.Tensor, Any],
+                               Any] = lambda batch, features, annotations:
+    (features, annotations)):
     def _supervised_inference(_, batch):
         if isinstance(model, torch.nn.Module):
             model.eval()
@@ -55,7 +56,9 @@ def create_supervised_evaluator(
             if prepare_batch is not None:
                 batch = prepare_batch(images, device, non_blocking)
             elif isinstance(images, torch.Tensor):
-                batch = prepare_tensor_batch(images, device=device, non_blocking=non_blocking)
+                batch = prepare_tensor_batch(images,
+                                             device=device,
+                                             non_blocking=non_blocking)
             else:
                 batch = images
             features = model(batch)
@@ -68,23 +71,27 @@ def create_triplets_evaluator(
     model: nn.Module,
     metrics: Dict[str, Metric],
     device: torch.device,
-    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool], Tuple[torch.Tensor, torch.Tensor,
-                                                                                     torch.Tensor]]],
+    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool],
+                                     Tuple[torch.Tensor, torch.Tensor,
+                                           torch.Tensor]]],
     non_blocking=False,
-    output_transform=lambda anchors, positives, negatives, anchors_emb, positives_emb, negatives_emb:
-    (anchors_emb, positives_emb, negatives_emb)
-):
-    def _unsupervised_inference(_: ignite.engine.Engine, batch: List[torch.Tensor]):
+    output_transform=lambda anchors, positives, negatives, anchors_emb,
+    positives_emb, negatives_emb: (anchors_emb, positives_emb, negatives_emb)):
+    def _unsupervised_inference(_: ignite.engine.Engine,
+                                batch: List[torch.Tensor]):
         model.eval()
         with torch.no_grad():
             if prepare_batch is not None:
-                anchors, positives, negatives = prepare_batch(batch, device, non_blocking)
+                anchors, positives, negatives = prepare_batch(
+                    batch, device, non_blocking)
             else:
-                anchors, positives, negatives = prepare_tensor_batch(batch, device=device, non_blocking=non_blocking)
+                anchors, positives, negatives = prepare_tensor_batch(
+                    batch, device=device, non_blocking=non_blocking)
             anchors_emb = model(anchors).flatten(['C', 'H', 'W'], 'C')
             positives_emb = model(positives).flatten(['C', 'H', 'W'], 'C')
             negatives_emb = model(negatives).flatten(['C', 'H', 'W'], 'C')
-            return output_transform(anchors, positives, negatives, anchors_emb, positives_emb, negatives_emb)
+            return output_transform(anchors, positives, negatives, anchors_emb,
+                                    positives_emb, negatives_emb)
 
     return create_evaluator(model, _unsupervised_inference, metrics)
 
@@ -93,17 +100,20 @@ def create_single_img_evaluator(
     model: nn.Module,
     metrics: Dict[str, Metric],
     device: torch.device,
-    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool], torch.Tensor]],
+    prepare_batch: Optional[Callable[[List[torch.Tensor], torch.device, bool],
+                                     torch.Tensor]],
     non_blocking=False,
-    output_transform=lambda batch, features: (features, )
-):
-    def _unsupervised_inference(_: ignite.engine.Engine, batch: List[torch.Tensor]):
+    output_transform=lambda batch, features: (features, )):
+    def _unsupervised_inference(_: ignite.engine.Engine,
+                                batch: List[torch.Tensor]):
         model.eval()
         with torch.no_grad():
             if prepare_batch is not None:
                 batch = prepare_batch(batch, device, non_blocking)
             else:
-                batch = prepare_tensor_batch(batch, device=device, non_blocking=non_blocking)
+                batch = prepare_tensor_batch(batch,
+                                             device=device,
+                                             non_blocking=non_blocking)
             features = model(batch)
             return output_transform(batch, features)
 
@@ -138,14 +148,19 @@ class Evaluator:
         else:
             raise RuntimeError(f'Evaluator mode {mode} is not supported')
         self.create_evaluator_fn = create_evaluator_fn
-        self.engine = create_evaluator_fn(model, metrics, device, prepare_batch=prepare_batch_fn)
+        self.engine = create_evaluator_fn(model,
+                                          metrics,
+                                          device,
+                                          prepare_batch=prepare_batch_fn)
         self.engine.logger.setLevel(logging.WARNING)
         self.test_loader = test_loader
         self.metrics = metrics
 
     def attach(self, engine: ignite.engine.Engine):
-        engine.add_event_handler(ignite.engine.Events.EPOCH_COMPLETED, self.on_epoch_end)
-        engine.add_event_handler(ignite.engine.Events.COMPLETED, self.on_epoch_end)
+        engine.add_event_handler(ignite.engine.Events.EPOCH_COMPLETED,
+                                 self.on_epoch_end)
+        engine.add_event_handler(ignite.engine.Events.COMPLETED,
+                                 self.on_epoch_end)
 
     def on_epoch_end(self, _):
         self.eval()

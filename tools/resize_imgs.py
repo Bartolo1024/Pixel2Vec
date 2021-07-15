@@ -13,8 +13,11 @@ ALLOWED_EXTENSIONS = ('tif', 'jpg', 'png', 'jpeg')
 @click.argument('out_path')
 @click.option('-h', '--out-height', default=None, type=float)
 @click.option('-w', '--out-width', default=None, type=float)
-@click.option('--mode', type=click.Choice(['values', 'ratio'], case_sensitive=False), default='values')
-def main(in_path: str, out_path: str, out_height: float, out_width: float, mode: str):
+@click.option('--mode',
+              type=click.Choice(['values', 'ratio'], case_sensitive=False),
+              default='values')
+def main(in_path: str, out_path: str, out_height: float, out_width: float,
+         mode: str):
     """
     Args:
         in_path: input directory
@@ -33,7 +36,9 @@ def main(in_path: str, out_path: str, out_height: float, out_width: float, mode:
     for file_name in tqdm(images):
         img_extension = file_name.split('.')[-1]
         if img_extension not in ALLOWED_EXTENSIONS:
-            print(f'File {file_name} will be skipped: extension {img_extension} not in {ALLOWED_EXTENSIONS}')
+            print(
+                f'File {file_name} will be skipped: extension {img_extension} not in {ALLOWED_EXTENSIONS}'
+            )
             continue
         file_path = os.path.join(in_path, file_name)
         img = Image.open(file_path)

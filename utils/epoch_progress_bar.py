@@ -17,5 +17,6 @@ class EpochProgressBar:
     def on_epoch_end(self, engine: Engine) -> None:
         """Update in every n-th epoch"""
         if self.bar is None:
-            self.bar = tqdm.tqdm(total=engine.state.max_epochs, **self.p_bar_kwargs)
+            self.bar = tqdm.tqdm(total=engine.state.max_epochs,
+                                 **self.p_bar_kwargs)
         self.bar.update()

@@ -19,14 +19,17 @@ from utils.restoration import restore_model, restore_params
 @click.argument('images_path')
 @click.option('--image-name', default=None, type=str)
 @click.option('--device', default=torch.device('cuda'), type=str)
-@click.option('--dims-reduction-method', type=click.Choice(('t-SNE', 'PCA')), default='t-SNE')
+@click.option('--dims-reduction-method',
+              type=click.Choice(('t-SNE', 'PCA')),
+              default='t-SNE')
 @click.option('--scale', default=.12, type=float)
-@click.option('--predictor-mode', type=click.Choice(('patches', 'single_inference')), default='patches')
+@click.option('--predictor-mode',
+              type=click.Choice(('patches', 'single_inference')),
+              default='patches')
 @click.option('--input-noise', type=float, default=0.)
-def main(
-    run_id: str, weights: str, images_path: str, image_name: str, device: torch.device, dims_reduction_method: str,
-    scale: float, predictor_mode: str, input_noise: float
-):
+def main(run_id: str, weights: str, images_path: str, image_name: str,
+         device: torch.device, dims_reduction_method: str, scale: float,
+         predictor_mode: str, input_noise: float):
     """Compute dot product of one image patch with others and draw heatmap
     Args:
         run_id: from neptune
@@ -48,12 +51,12 @@ def main(
     out_image_path = os.path.join(out_dir, image_name)
     logging.info(f'results will we stored as {out_image_path}')
 
-    model = restore_model(params['model_spec'], params['run_dir'], weights).to(device)
+    model = restore_model(params['model_spec'], params['run_dir'],
+                          weights).to(device)
     predictor = Predictor(model, predictor_mode, params['data_flow'], device)
 
     predictor.transform = torchvision.transforms.Compose(
-        [predictor.transform, lambda s: s + input_noise * torch.rand_like(s)]
-    )
+        [predictor.transform, lambda s: s + input_noise * torch.rand_like(s)])
 
     reduce_fn = get_tsne_rgb if dims_reduction_method == 't-SNE' else get_pca_rgb
 
