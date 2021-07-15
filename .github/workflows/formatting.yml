@@ -20,11 +20,11 @@ jobs:
         shell: bash -l {0}
         run: |
           isort .
-      - name: yapf
-        id: yapf
-        uses: diegovalenzuelaiturra/yapf-action@v0.0.1
+      - name: autoyapf
+        id: autoyapf
+        uses: mritunjaysharma394/autoyapf@v2
         with:
-          args: . --recursive --diff
+          args: --style pep8 --recursive --in-place .
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
