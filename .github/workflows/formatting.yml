@@ -27,7 +27,7 @@ jobs:
         uses: mritunjaysharma394/autoyapf@v2
         with:
           args: --recursive --in-place .
-      - name: Push changes
+      - name: Push changes if any file changed
         if: $(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi) == 'true'
         run: |
           git config --global user.name 'Autoformatting'
