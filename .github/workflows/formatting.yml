@@ -33,6 +33,7 @@ jobs:
       - name: Push changes
         if: steps.git-check.outputs.modified == 'true'
         run: |
+          git status
           echo steps.git-check.outputs.modified
           git config --global user.name 'Autoformatting'
           git config --global user.email 'bartolo1024@gmail.com'
