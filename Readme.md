@@ -13,7 +13,7 @@ The preferred way to install is to use a [conda environment](https://conda.io/pr
 ```{bash}
 git clone git@github.com:Bartolo1024/Pixel2Vec.git
 cd Pixel2Vec
-conda env create -f .\environment.yml
+conda env create -f .\environment.yaml
 conda activate pixel2vec
 ```
 
