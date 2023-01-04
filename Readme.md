@@ -17,6 +17,12 @@ conda env create -f .\environment.yaml
 conda activate pixel2vec
 ```
 
+Code supports Apple M1 GPU out of the box as `torch.device('mps')`. On macOS, install it with:
+
+```{bash}
+conda env create -f .\environment-m1.yaml
+```
+
 ## Run
 
 To train the SOTA model on the minesweeper image run command:\
