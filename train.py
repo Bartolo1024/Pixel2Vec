@@ -72,7 +72,7 @@ def main(
         device = torch.device('cpu')
     else:
         device = torch.device(device)
-    
+
     logging.info(f'training will be performed on {device} device')
 
     artifacts_dir = create_artifacts_dir(project_config['runs_directory'])
