@@ -25,7 +25,7 @@ def main(
     model_spec: Dict[str, Any],
     loss_fn_spec: Dict[str, Any],
     max_epochs: int,
-    device: str = 'cuda',
+    device: str = 'gpu',
     attach_eval_progress_bar: bool = True,
     plugins_builder_kwargs: Optional[Dict[str, Any]] = None,
     training_mode: str = 'patches',
@@ -40,7 +40,7 @@ def main(
          optimizer and optimizer arguments:
         loss_fn_spec: dictionary with loss function specification contains create function location and arguments:
         max_epochs: number of train epochs:
-        device: cuda or cpu
+        device: cuda, mps or cpu; gpu picks from cuda or mps
         attach_eval_progress_bar: flag that attach progress bar to evaluation
         plugins_builder_kwargs: build_plugins keyword arguments
         training_mode: patches, images or sliced_images
@@ -53,7 +53,26 @@ def main(
     project_config = load_project_config()
     if len(kwargs) > 0:
         logging.warning(f'In input yaml not used keyword arguments: {kwargs} were passed')
-    device = torch.device('cpu') if not torch.cuda.is_available() or device == 'cpu' else torch.device('cuda')
+
+    if device == 'gpu':
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            logging.info(f'GPU found, it is {device} device.')
+        elif torch.backends.mps.is_available():
+            device = torch.device('mps')
+            logging.info(f'GPU found, it is {device} device.')
+        else:
+            device = torch.device('cpu')
+            logging.warning(f'GPU not found, using {device} device.')
+    elif device == 'cuda' and not torch.cuda.is_available():
+        logging.warning(f'CUDA not available')
+        device = torch.device('cpu')
+    elif device == 'mps' and not torch.backends.mps.is_available():
+        logging.warning(f'MPS (M1 Apple GPU) not available')
+        device = torch.device('cpu')
+    else:
+        device = torch.device(device)
+    
     logging.info(f'training will be performed on {device} device')
 
     artifacts_dir = create_artifacts_dir(project_config['runs_directory'])

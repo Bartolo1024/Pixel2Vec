@@ -6,8 +6,6 @@ from torch import nn
 class ContrastiveLoss(nn.Module):
     def __init__(self):
         super().__init__()
-        LogSigmoid = name_module_class(nn.LogSigmoid, [['N', '*']], ['N', '*'])
-        self.log_sigmoid = LogSigmoid()
 
     def forward(
         self, anchor_embedding: torch.Tensor, positive_embedding: torch.Tensor, negative_embedding: torch.Tensor
@@ -26,4 +24,5 @@ class ContrastiveLoss(nn.Module):
         negative_embedding = negative_embedding.align_to('N', 'C', 'Y')
         positive_product = anchor_embedding.bmm(positive_embedding).flatten(['N', 'X', 'Y'], 'N')
         negative_product = anchor_embedding.bmm(negative_embedding).flatten(['N', 'X', 'Y'], 'N')
-        return (-self.log_sigmoid(positive_product) - self.log_sigmoid(-negative_product)).mean()
+        # nn.LogSigmoid is not supported on M1 MPS, so we use .sigmoid().log()
+        return (-positive_product.sigmoid().log() - (-negative_product).sigmoid().log()).mean()

@@ -125,7 +125,7 @@ class Evaluator:
             model: model or predictor
             metrics: dictionary with ignite metrics
             test_loader: data loader for testing
-            device: cuda or cpu
+            device: cuda, mps or cpu
             prepare_batch_fn: function for moving tensors to device
             mode: patches, images, sliced_images or supervised
         """

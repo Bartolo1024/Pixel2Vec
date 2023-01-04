@@ -158,7 +158,7 @@ class PrepareImagePatchTriplets:
         self, device: torch.device, transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs
     ):
         """
-        :param device - cuda or cpu torch device:
+        :param device - cuda, mps or cpu torch device:
         :param transform - function for an each patch postprocessing:
         :param kwargs - keyword arguments for the triplet generator:
         """
