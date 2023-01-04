@@ -1,5 +1,4 @@
 import torch
-from pytorch_named_dims import name_module_class
 from torch import nn
 
 
