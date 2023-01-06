@@ -65,10 +65,10 @@ def main(
             device = torch.device('cpu')
             logging.warning(f'GPU not found, using {device} device.')
     elif device == 'cuda' and not torch.cuda.is_available():
-        logging.warning(f'CUDA not available')
+        logging.warning('CUDA not available')
         device = torch.device('cpu')
     elif device == 'mps' and not torch.backends.mps.is_available():
-        logging.warning(f'MPS (M1 Apple GPU) not available')
+        logging.warning('MPS (M1 Apple GPU) not available')
         device = torch.device('cpu')
     else:
         device = torch.device(device)
