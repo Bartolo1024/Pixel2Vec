@@ -54,24 +54,14 @@ def main(
     if len(kwargs) > 0:
         logging.warning(f'In input yaml not used keyword arguments: {kwargs} were passed')
 
-    if device == 'gpu':
-        if torch.cuda.is_available():
-            device = torch.device('cuda')
-            logging.info(f'GPU found, it is {device} device.')
-        elif torch.backends.mps.is_available():
-            device = torch.device('mps')
-            logging.info(f'GPU found, it is {device} device.')
-        else:
-            device = torch.device('cpu')
-            logging.warning(f'GPU not found, using {device} device.')
-    elif device == 'cuda' and not torch.cuda.is_available():
-        logging.warning('CUDA not available')
-        device = torch.device('cpu')
-    elif device == 'mps' and not torch.backends.mps.is_available():
-        logging.warning('MPS (M1 Apple GPU) not available')
-        device = torch.device('cpu')
+    if device in ['gpu', 'cuda'] and torch.cuda.is_available():
+        device = torch.device('cuda')
+    elif device in ['gpu', 'mps'] and torch.backends.mps.is_available():
+        device = torch.device('mps')
     else:
-        device = torch.device(device)
+        if device != 'cpu':
+            logging.warning(f'{device} not found, falling back to CPU.')
+        device = torch.device('cpu')
 
     logging.info(f'training will be performed on {device} device')
 
