@@ -1,0 +1,35 @@
+name: pixel2vec
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.10
+  - click
+  - h5py
+  - hdf5
+  - ignite
+  - numpy
+  - pillow
+  - pip
+  - pytorch
+  - pyyaml
+  - torchvision
+  - tqdm
+  - yaml
+  - scikit-learn
+  - pandas
+  - seaborn
+  - pip:
+      - opencv-python
+      - pytest
+      - flake8
+      - livelossplot
+      - yapf
+      - mypy
+      - psutil
+      - git+https://github.com/stared/pytorch-named-dims
+      - pre-commit
+      - ipython
+      - isort
+      - jupyter
+      - gitpython

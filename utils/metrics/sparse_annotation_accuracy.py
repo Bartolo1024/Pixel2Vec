@@ -89,7 +89,7 @@ class SparseAnnotationAccuracy(Metric):
         """
         Args:
             masks: boolean masks
-            device: cuda or cpu
+            device: cuda, mps or cpu
 
         Returns:
             long tensor with labels

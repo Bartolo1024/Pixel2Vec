@@ -138,7 +138,7 @@ def build_evaluators(
         loss_fn: function or callable for loss value computation
         loaders: iterators with images
         logger: for metrics storation
-        device: cuda or cpu
+        device: cuda, mps or cpu
         metrics: list with listed metrics
         attach_progress_bar: attach progress bar to each evaluator
         mode: patches or images

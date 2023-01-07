@@ -33,7 +33,7 @@ def main(
         weights: name of weights in mlruns/<run_id>/artifacts/
         images_path: path to test images folder
         image_name: image name from folder (random if not provided)
-        device: cuda or cpu
+        device: 'cuda', 'mps' (Apple M1 GPU) or 'cpu'
         dims_reduction_method: t-SNE or PCA
         scale: scale of the output image
         predictor_mode: predict on patches or whole image

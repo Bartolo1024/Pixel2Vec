@@ -25,7 +25,7 @@ def main(
     model_spec: Dict[str, Any],
     loss_fn_spec: Dict[str, Any],
     max_epochs: int,
-    device: str = 'cuda',
+    device: str = 'gpu',
     attach_eval_progress_bar: bool = True,
     plugins_builder_kwargs: Optional[Dict[str, Any]] = None,
     training_mode: str = 'patches',
@@ -40,7 +40,7 @@ def main(
          optimizer and optimizer arguments:
         loss_fn_spec: dictionary with loss function specification contains create function location and arguments:
         max_epochs: number of train epochs:
-        device: cuda or cpu
+        device: cuda, mps or cpu; gpu picks from cuda or mps
         attach_eval_progress_bar: flag that attach progress bar to evaluation
         plugins_builder_kwargs: build_plugins keyword arguments
         training_mode: patches, images or sliced_images
@@ -53,7 +53,16 @@ def main(
     project_config = load_project_config()
     if len(kwargs) > 0:
         logging.warning(f'In input yaml not used keyword arguments: {kwargs} were passed')
-    device = torch.device('cpu') if not torch.cuda.is_available() or device == 'cpu' else torch.device('cuda')
+
+    if device in ['gpu', 'cuda'] and torch.cuda.is_available():
+        device = torch.device('cuda')
+    elif device in ['gpu', 'mps'] and torch.backends.mps.is_available():
+        device = torch.device('mps')
+    else:
+        if device != 'cpu':
+            logging.warning(f'{device} not found, falling back to CPU.')
+        device = torch.device('cpu')
+
     logging.info(f'training will be performed on {device} device')
 
     artifacts_dir = create_artifacts_dir(project_config['runs_directory'])
