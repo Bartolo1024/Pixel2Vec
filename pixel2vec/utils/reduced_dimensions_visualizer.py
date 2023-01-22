@@ -33,7 +33,7 @@ def get_projection(feature_map: torch.Tensor, projector: Union[TSNE, PCA]):
     grid_min = grid.min()
     grid_max = grid.max()
     projection_img = ((grid - grid_min) / (grid_max - grid_min) * 255).astype(np.uint8)
-    projection_img = PIL.Image.fromarray(projection_img).resize((width, height), resample=PIL.Image.NEAREST)
+    projection_img = PIL.Image.fromarray(projection_img).resize((width, height), resample=PIL.Image.Resampling.NEAREST)
     return projection_img
 
 
