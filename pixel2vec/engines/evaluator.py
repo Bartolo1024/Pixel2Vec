@@ -6,8 +6,8 @@ import torch
 from ignite.metrics import Metric
 from torch import nn
 
-from utils import dictionary_flatten
-from utils.predictor import Predictor
+from pixel2vec.utils import dictionary_flatten
+from pixel2vec.utils.predictor import Predictor
 
 from . import prepare_tensor_batch
 

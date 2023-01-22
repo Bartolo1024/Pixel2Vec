@@ -4,7 +4,7 @@ from typing import Callable
 from ignite.engine import Engine, Events
 from torch import nn
 
-from . import store_weights
+from pixel2vec.utils import store_weights
 
 
 class PeriodicalH5NetSaver:

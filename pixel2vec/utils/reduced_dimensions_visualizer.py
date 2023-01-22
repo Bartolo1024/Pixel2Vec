@@ -12,9 +12,9 @@ from pytorch_named_dims import nm
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from dataflow.utils import get_img_list_from_folder
-from utils.predictor import Predictor
-from utils.restoration import choose_best_weights
+from pixel2vec.dataflow.utils import get_img_list_from_folder
+from pixel2vec.utils.predictor import Predictor
+from pixel2vec.utils.restoration import choose_best_weights
 
 
 def get_projection(feature_map: torch.Tensor, projector: Union[TSNE, PCA]):

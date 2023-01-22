@@ -10,7 +10,7 @@ import torchvision.transforms
 from numpy import ndarray
 from torch.nn import functional as F
 
-import dataflow.transforms
+from pixel2vec.dataflow.transforms import GenerateRandomTriplets
 
 _IMG_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff']
 
@@ -162,7 +162,7 @@ class PrepareImagePatchTriplets:
         :param transform - function for an each patch postprocessing:
         :param kwargs - keyword arguments for the triplet generator:
         """
-        self.triplets_generator = dataflow.transforms.GenerateRandomTriplets(**kwargs)
+        self.triplets_generator = GenerateRandomTriplets(**kwargs)
         self.patch_transform = transform if transform else torchvision.transforms.Compose(
             [
                 dataflow.transforms.RandomVerticalFlip(),

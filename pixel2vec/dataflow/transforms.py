@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import torch
 import torchvision.transforms
 
-from dataflow import utils
+# from pixel2vec.dataflow import utils
 
 
 class InvertNormalization:
@@ -106,31 +106,31 @@ class GenerateRandomTriplets:
         return negative_patch_idx
 
 
-class ExtractTripletsFromImage:
-    def __init__(self, patch_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs):
-        """
-        :param transform - function for an each patch postprocessing:
-        :param kwargs - keyword arguments for the triplet generator:
-        """
-        self.triplets_generator = GenerateRandomTriplets(**kwargs)
-        self.patch_transform = patch_transform if patch_transform else torchvision.transforms.Compose(
-            [
-                RandomVerticalFlip(),
-                RandomHorizontalFlip(),
-                RandomBrightnessContrastAdjust(),
-            ]
-        )
-
-    def __call__(self, img: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Generate triplets for all images, then concatenate it to three tensors"""
-        triplets = self.triplets_generator(img)
-        ret = {}
-        for group_name in ['anchor', 'positive', 'negative']:
-            group = [triplet[group_name] for triplet in triplets]
-            group = [self.patch_transform(s) for s in group]
-            group = torch.stack(group)
-            ret[group_name] = group
-        return ret['anchor'], ret['positive'], ret['negative']
+# class ExtractTripletsFromImage:
+#     def __init__(self, patch_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs):
+#         """
+#         :param transform - function for an each patch postprocessing:
+#         :param kwargs - keyword arguments for the triplet generator:
+#         """
+#         self.triplets_generator = GenerateRandomTriplets(**kwargs)
+#         self.patch_transform = patch_transform if patch_transform else torchvision.transforms.Compose(
+#             [
+#                 RandomVerticalFlip(),
+#                 RandomHorizontalFlip(),
+#                 RandomBrightnessContrastAdjust(),
+#             ]
+#         )
+#
+#     def __call__(self, img: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+#         """Generate triplets for all images, then concatenate it to three tensors"""
+#         triplets = self.triplets_generator(img)
+#         ret = {}
+#         for group_name in ['anchor', 'positive', 'negative']:
+#             group = [triplet[group_name] for triplet in triplets]
+#             group = [self.patch_transform(s) for s in group]
+#             group = torch.stack(group)
+#             ret[group_name] = group
+#         return ret['anchor'], ret['positive'], ret['negative']
 
 
 class RandomHorizontalFlip:

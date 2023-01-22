@@ -8,9 +8,9 @@ import torchvision.transforms
 from matplotlib import pyplot as plt
 from PIL import Image
 
-from utils.predictor import Predictor
-from utils.reduced_dimensions_visualizer import get_pca_rgb, get_tsne_rgb
-from utils.restoration import restore_model, restore_params
+from pixel2vec.utils.predictor import Predictor
+from pixel2vec.utils.reduced_dimensions_visualizer import get_pca_rgb, get_tsne_rgb
+from pixel2vec.utils.restoration import restore_model, restore_params
 
 
 @click.command()

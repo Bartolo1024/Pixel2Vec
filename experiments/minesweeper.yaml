@@ -1,6 +1,6 @@
 data_dir: minesweeper/
 model_spec:
-    class: models.simple_resnet.SimpleResNet
+    class: pixel2vec.models.simple_resnet.SimpleResNet
     params:
         features: 16
         num_blocks: 8
@@ -29,6 +29,6 @@ data_flow:
         min_positive_distance: 0
         max_positive_distance: 2
 loss_fn_spec:
-    create_fn: losses.contrastive_loss.ContrastiveLoss
+    create_fn: pixel2vec.losses.contrastive_loss.ContrastiveLoss
     params: {}
 training_mode: patches

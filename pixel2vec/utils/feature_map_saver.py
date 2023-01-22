@@ -10,9 +10,9 @@ import tqdm
 from ignite.engine import Engine, Events
 from sklearn.decomposition import PCA
 
-from dataflow.utils import get_img_list_from_folder
-from utils.predictor import Predictor
-from utils.restoration import choose_best_weights
+from pixel2vec.dataflow.utils import get_img_list_from_folder
+from pixel2vec.utils.predictor import Predictor
+from pixel2vec.utils.restoration import choose_best_weights
 
 
 def pca_projection(feature_map: torch.Tensor, mask: torch.Tensor, num_components: int):
