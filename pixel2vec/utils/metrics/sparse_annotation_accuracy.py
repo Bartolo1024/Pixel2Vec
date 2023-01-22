@@ -6,7 +6,7 @@ import torch
 from ignite.metrics.metric import Metric
 from torch.nn import functional as F
 
-from pixel2vec.utils.annotation_samplers import MaskRandomSampler, SkeletonSampler
+from pixel2vec.utils.annotation_samplers import (MaskRandomSampler, SkeletonSampler)
 from pixel2vec.utils.centres_distance import (
     choose_best_idxes_with_cosine_similarity, choose_best_idxes_with_euclidean_distances
 )

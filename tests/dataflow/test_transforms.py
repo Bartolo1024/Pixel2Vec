@@ -1,8 +1,7 @@
+import dataflow.transforms
 import torch
 from PIL import Image
 from torchvision.transforms import (RandomHorizontalFlip, RandomVerticalFlip, ToTensor)
-
-import dataflow.transforms
 
 
 def create_test_image():

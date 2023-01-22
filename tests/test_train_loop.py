@@ -3,15 +3,14 @@ import os
 from typing import Any, Callable, Dict, Iterable
 
 import torch.utils.data
-from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
-from pytest import fixture
-from torch import nn, optim
-
 import utils
 import utils.epoch_progress_bar
 import utils.metrics.loss
 import utils.predictor
 from engines import builders, unsupervised
+from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
+from pytest import fixture
+from torch import nn, optim
 from utils import create_artifacts_dir, load_project_config, saver
 
 

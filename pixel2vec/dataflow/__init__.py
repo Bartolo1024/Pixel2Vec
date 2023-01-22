@@ -6,10 +6,13 @@ import torch
 import torchvision.transforms
 from torch.utils.data.dataloader import DataLoader
 
-from pixel2vec.dataflow.transforms import BlotRightBottomWithAverageEdgeValue, CropRightBottom, RandomBrightnessContrastAdjust, RandomHorizontalFlip, RandomVerticalFlip
 from pixel2vec.dataflow.datasets.image_list import ImageListInMemoryDataset
 from pixel2vec.dataflow.datasets.image_patch_triplet_dataset import \
     ImagePatchTripletDatset
+from pixel2vec.dataflow.transforms import (
+    BlotRightBottomWithAverageEdgeValue, CropRightBottom, RandomBrightnessContrastAdjust, RandomHorizontalFlip,
+    RandomVerticalFlip
+)
 from pixel2vec.dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
 
 

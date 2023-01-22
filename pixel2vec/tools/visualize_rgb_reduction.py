@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 from pixel2vec.utils.predictor import Predictor
-from pixel2vec.utils.reduced_dimensions_visualizer import get_pca_rgb, get_tsne_rgb
+from pixel2vec.utils.reduced_dimensions_visualizer import (get_pca_rgb, get_tsne_rgb)
 from pixel2vec.utils.restoration import restore_model, restore_params
 
 
