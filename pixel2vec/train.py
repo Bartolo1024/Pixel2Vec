@@ -13,8 +13,7 @@ import pixel2vec.utils.epoch_progress_bar
 import pixel2vec.utils.metrics.loss
 import pixel2vec.utils.predictor
 from pixel2vec.engines import builders, unsupervised
-from pixel2vec.utils import (create_artifacts_dir, load_project_config, params,
-                             saver)
+from pixel2vec.utils import (create_artifacts_dir, load_project_config, params, saver)
 
 
 @click.command()

@@ -10,10 +10,9 @@ import torchvision.transforms
 from numpy import ndarray
 from torch.nn import functional as F
 
-from pixel2vec.dataflow.transforms import (GenerateRandomTriplets,
-                                           RandomBrightnessContrastAdjust,
-                                           RandomHorizontalFlip,
-                                           RandomVerticalFlip)
+from pixel2vec.dataflow.transforms import (
+    GenerateRandomTriplets, RandomBrightnessContrastAdjust, RandomHorizontalFlip, RandomVerticalFlip
+)
 
 _IMG_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff']
 

@@ -12,8 +12,7 @@ import pixel2vec.utils.epoch_progress_bar
 import pixel2vec.utils.metrics.loss
 import pixel2vec.utils.predictor
 from pixel2vec.engines import evaluator as evaluator_module
-from pixel2vec.utils import (average_output_metrics, feature_map_saver,
-                             reduced_dimensions_visualizer)
+from pixel2vec.utils import (average_output_metrics, feature_map_saver, reduced_dimensions_visualizer)
 from pixel2vec.utils.metrics import triplet_dot_product_accuracy
 
 
