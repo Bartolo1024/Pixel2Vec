@@ -7,12 +7,12 @@ from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
 from pytest import fixture
 from torch import nn, optim
 
-import utils
-import utils.epoch_progress_bar
-import utils.metrics.loss
-import utils.predictor
-from engines import builders, unsupervised
-from utils import create_artifacts_dir, load_project_config, saver
+import pixel2vec.utils
+import pixel2vec.utils.epoch_progress_bar
+import pixel2vec.utils.metrics.loss
+import pixel2vec.utils.predictor
+from pixel2vec.engines import builders, unsupervised
+from pixel2vec.utils import create_artifacts_dir, load_project_config, saver
 
 
 @fixture
@@ -49,7 +49,7 @@ def loaders(data_flow_spec: Dict[str, Any]) -> Dict[str, Iterable]:
 @fixture()
 def model(device: torch.device) -> nn.Module:
     model_spec: Dict[str, Any] = {
-        'class': 'models.simple_resnet.SimpleResNet',
+        'class': 'pixel2vec.models.simple_resnet.SimpleResNet',
         'params': {
             'features': 16,
             'num_blocks': 8
@@ -61,13 +61,15 @@ def model(device: torch.device) -> nn.Module:
     }
     # load model from ./models/name_of_some_model.py
     logging.info(f"create model from {model_spec['class']}")
-    model = utils.import_function(model_spec['class'])(**model_spec['params']).to(device)
+    model = pixel2vec.utils.import_function(model_spec['class'])(**model_spec['params']).to(device)
     return model
 
 
 @fixture
-def predictor(model: nn.Module, data_flow_spec: Dict[str, Any], device: torch.device) -> utils.predictor.Predictor:
-    predictor = utils.predictor.Predictor(model, 'patches', data_flow_spec, device)
+def predictor(
+    model: nn.Module, data_flow_spec: Dict[str, Any], device: torch.device
+) -> pixel2vec.utils.predictor.Predictor:
+    predictor = pixel2vec.utils.predictor.Predictor(model, 'patches', data_flow_spec, device)
     return predictor
 
 
@@ -76,22 +78,22 @@ def optimizer(model: nn.Module) -> optim.Optimizer:
     optim_spec: Dict[str, Any] = {'optimizer': 'Adam', 'optimizer_params': {'lr': 0.0001}}
     # load model from ./models/name_of_some_model.py
     logging.info(f"create optimizer: {optim_spec['optimizer']}")
-    optimizer = utils.get_optimizer(model, optim_spec['optimizer'], **optim_spec['optimizer_params'])
+    optimizer = pixel2vec.utils.get_optimizer(model, optim_spec['optimizer'], **optim_spec['optimizer_params'])
     return optimizer
 
 
 @fixture()
 def loss_fn(device: torch.device) -> Callable[[Any], torch.Tensor]:
-    loss_fn_spec: Dict[str, Any] = {'create_fn': 'losses.contrastive_loss.ContrastiveLoss', 'params': {}}
+    loss_fn_spec: Dict[str, Any] = {'create_fn': 'pixel2vec.losses.contrastive_loss.ContrastiveLoss', 'params': {}}
     # load losses from ./losses/name_of_some_losses.py
     logging.info(f"create loss function: {loss_fn_spec['create_fn']}")
-    loss_fn = utils.import_function(loss_fn_spec['create_fn'])(**loss_fn_spec['params']).to(device)
+    loss_fn = pixel2vec.utils.import_function(loss_fn_spec['create_fn'])(**loss_fn_spec['params']).to(device)
     return loss_fn
 
 
 def test_train_engine(
     loaders: Dict[str, Iterable], model: nn.Module, optimizer: optim.Optimizer, loss_fn: Callable[[Any], torch.Tensor],
-    predictor: utils.predictor.Predictor, device: torch.device
+    predictor: pixel2vec.utils.predictor.Predictor, device: torch.device
 ):
     data_dir: str = 'data/test/'
     max_epochs: int = 2

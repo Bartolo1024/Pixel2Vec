@@ -5,7 +5,7 @@ import torch
 import tqdm
 from torch.utils.data import Dataset
 
-import dataflow.utils
+import pixel2vec.dataflow.utils
 
 
 def clone(p: torch.Tensor) -> torch.Tensor:
@@ -71,7 +71,7 @@ class ImagePatchTripletDatset(Dataset):
         self.idx_mapping = {}
         patch_idx = 0
         for grid_idx, img in tqdm.tqdm(enumerate(self.transformed_images), desc='Prepare grids'):
-            grid = dataflow.utils.extract_patches_from_tensor(img, self.patch_size, flatten=False)
+            grid = pixel2vec.dataflow.utils.extract_patches_from_tensor(img, self.patch_size, flatten=False)
             self.grids.append(grid)
             for h_idx, row in enumerate(grid):
                 for w_idx, col in enumerate(row):
@@ -98,11 +98,11 @@ class ImagePatchTripletDatset(Dataset):
         grid_size = grid.shape[:2]
         anchor = grid[mapping['h_idx'], mapping['w_idx']]
         anchor_idx = mapping['h_idx'] * grid.shape[1] + mapping['w_idx']
-        positive_patch_idxs = dataflow.utils.random_index_from_area(
+        positive_patch_idxs = pixel2vec.dataflow.utils.random_index_from_area(
             anchor_idx, grid.shape[:2], min_radius=self.min_positive_distance, max_radius=self.max_positive_distance
         )
         positive = flattened_grid[positive_patch_idxs]
-        negative_patch_idx = dataflow.utils.random_index_from_area(
+        negative_patch_idx = pixel2vec.dataflow.utils.random_index_from_area(
             anchor_idx, grid_size, min_radius=self.min_negative_distance, max_radius=max(grid.shape[:2])
         )
         negative = flattened_grid[negative_patch_idx]

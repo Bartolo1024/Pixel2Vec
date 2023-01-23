@@ -12,9 +12,9 @@ from pytorch_named_dims import nm
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from dataflow.utils import get_img_list_from_folder
-from utils.predictor import Predictor
-from utils.restoration import choose_best_weights
+from pixel2vec.dataflow.utils import get_img_list_from_folder
+from pixel2vec.utils.predictor import Predictor
+from pixel2vec.utils.restoration import choose_best_weights
 
 
 def get_projection(feature_map: torch.Tensor, projector: Union[TSNE, PCA]):
@@ -33,7 +33,7 @@ def get_projection(feature_map: torch.Tensor, projector: Union[TSNE, PCA]):
     grid_min = grid.min()
     grid_max = grid.max()
     projection_img = ((grid - grid_min) / (grid_max - grid_min) * 255).astype(np.uint8)
-    projection_img = PIL.Image.fromarray(projection_img).resize((width, height), resample=PIL.Image.NEAREST)
+    projection_img = PIL.Image.fromarray(projection_img).resize((width, height), resample=PIL.Image.Resampling.NEAREST)
     return projection_img
 
 

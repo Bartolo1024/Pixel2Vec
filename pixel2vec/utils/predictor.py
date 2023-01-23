@@ -3,10 +3,10 @@ from typing import Any, Dict
 import torch
 from torch import nn
 
-from dataflow.utils import (
+from pixel2vec.dataflow.utils import (
     extract_patches_from_pil_image, extract_patches_from_tensor, merge_feature_maps, merge_grid_patches
 )
-from utils.restoration import get_transforms
+from pixel2vec.utils.restoration import get_transforms
 
 
 class Predictor:

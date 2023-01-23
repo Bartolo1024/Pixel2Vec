@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from dataflow import utils
+from pixel2vec.dataflow import utils
 
 
 def test_extract_patches_from_tensor():

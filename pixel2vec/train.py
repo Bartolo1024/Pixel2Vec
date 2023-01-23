@@ -8,12 +8,12 @@ import torch.optim
 import torch.utils.data
 from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
 
-import utils
-import utils.epoch_progress_bar
-import utils.metrics.loss
-import utils.predictor
-from engines import builders, unsupervised
-from utils import create_artifacts_dir, load_project_config, params, saver
+import pixel2vec.utils
+import pixel2vec.utils.epoch_progress_bar
+import pixel2vec.utils.metrics.loss
+import pixel2vec.utils.predictor
+from pixel2vec.engines import builders, unsupervised
+from pixel2vec.utils import (create_artifacts_dir, load_project_config, params, saver)
 
 
 @click.command()
@@ -74,15 +74,15 @@ def main(
 
     # load model from ./models/name_of_some_model.py
     logging.info(f"create model from {model_spec['class']}")
-    model = utils.import_function(model_spec['class'])(**model_spec['params']).to(device)
+    model = pixel2vec.utils.import_function(model_spec['class'])(**model_spec['params']).to(device)
 
     # load losses from ./losses/name_of_some_losses.py
     logging.info(f"create loss function: {loss_fn_spec['create_fn']}")
-    loss_fn = utils.import_function(loss_fn_spec['create_fn'])(**loss_fn_spec['params']).to(device)
+    loss_fn = pixel2vec.utils.import_function(loss_fn_spec['create_fn'])(**loss_fn_spec['params']).to(device)
 
     # load optimizer from torch.optim
     logging.info(f"create optimizer: {model_spec['optimizer']}")
-    optimizer = utils.get_optimizer(model, model_spec['optimizer'], **model_spec['optimizer_params'])
+    optimizer = pixel2vec.utils.get_optimizer(model, model_spec['optimizer'], **model_spec['optimizer_params'])
 
     logging.info(f"create trainer for mode: {training_mode}")
     create_trainer = unsupervised.create_triplet_trainer if training_mode == 'patches' \
@@ -90,7 +90,7 @@ def main(
     trainer = create_trainer(model=model, optimizer=optimizer, loss_fn=loss_fn, device=device)
 
     logger = PlotLossesCallback(train_engine=trainer, outputs=('ExtremaPrinter', ))
-    predictor = utils.predictor.Predictor(model, training_mode, data_flow, device)
+    predictor = pixel2vec.utils.predictor.Predictor(model, training_mode, data_flow, device)
 
     evaluators = builders.build_evaluators(
         predictor,

@@ -6,9 +6,8 @@ from typing import Any, Callable, Dict, Tuple
 import torch
 import torchvision.transforms
 
-import dataflow.transforms
-import dataflow.utils
-from utils import import_function, join_path, load_project_config
+import pixel2vec.dataflow.transforms
+from pixel2vec.utils import import_function, join_path, load_project_config
 
 
 def restore_params(run_id: str, run_pattern: str = 'GEAR-{}') -> Dict:
@@ -58,7 +57,7 @@ def get_transforms(data_flow_spec: Dict,
             torchvision.transforms.Normalize(**norm_stats)
         ]
     )
-    inv_trn = dataflow.transforms.InvertNormalization(norm_stats)
+    inv_trn = pixel2vec.dataflow.transforms.InvertNormalization(norm_stats)
     return trn, inv_trn
 
 

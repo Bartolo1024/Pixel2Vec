@@ -6,11 +6,14 @@ import torch
 import torchvision.transforms
 from torch.utils.data.dataloader import DataLoader
 
-import dataflow.transforms
-from dataflow.datasets.image_list import ImageListInMemoryDataset
-from dataflow.datasets.image_patch_triplet_dataset import \
+from pixel2vec.dataflow.datasets.image_list import ImageListInMemoryDataset
+from pixel2vec.dataflow.datasets.image_patch_triplet_dataset import \
     ImagePatchTripletDatset
-from dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
+from pixel2vec.dataflow.transforms import (
+    BlotRightBottomWithAverageEdgeValue, CropRightBottom, RandomBrightnessContrastAdjust, RandomHorizontalFlip,
+    RandomVerticalFlip
+)
+from pixel2vec.dataflow.utils import (extract_patches_from_pil_image, get_img_list_from_folder, read_images_from_folder)
 
 
 def warn_if_no_workers(func):
@@ -65,9 +68,9 @@ def build_transforms(
     test_transform.append(torchvision.transforms.ToTensor())
 
     if crop_percentage <= 0.99:
-        train_crop = dataflow.transforms.BlotRightBottomWithAverageEdgeValue(crop_percentage)
+        train_crop = BlotRightBottomWithAverageEdgeValue(crop_percentage)
         train_transform.append(train_crop)
-        test_crop = dataflow.transforms.CropRightBottom(crop_percentage)
+        test_crop = CropRightBottom(crop_percentage)
         test_transform.append(test_crop)
     else:
         logging.info('Images will not be cropped for evaluation')
@@ -125,9 +128,9 @@ def create_patches_dataflow(
 
     patch_transform = torchvision.transforms.Compose(
         [
-            dataflow.transforms.RandomVerticalFlip(),
-            dataflow.transforms.RandomHorizontalFlip(),
-            dataflow.transforms.RandomBrightnessContrastAdjust(),
+            RandomVerticalFlip(),
+            RandomHorizontalFlip(),
+            RandomBrightnessContrastAdjust(),
         ]
     )
     train_dataset = ImagePatchTripletDatset(

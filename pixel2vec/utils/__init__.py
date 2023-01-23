@@ -24,8 +24,8 @@ def load_project_config(config_file: str = 'project_config.yaml', local_config_f
         project config which is the same for all experiments
     """
     dirname = os.path.dirname(os.path.realpath(__file__))
-    config_file = os.path.join(dirname, '..', config_file)
-    local_config_file = os.path.join(dirname, '..', local_config_file)
+    config_file = os.path.join(dirname, '../..', config_file)
+    local_config_file = os.path.join(dirname, '../..', local_config_file)
     with open(config_file) as f:
         logging.info(f'load base project config from {config_file}')
         params = yaml.full_load(f)

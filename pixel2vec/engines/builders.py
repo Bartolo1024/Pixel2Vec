@@ -6,14 +6,14 @@ from ignite.contrib.handlers import ProgressBar
 from ignite.metrics.metric import Metric
 from livelossplot.inputs.pytorch_ignite import PlotLossesCallback
 
-import dataflow
-import utils
-import utils.epoch_progress_bar
-import utils.metrics.loss
-import utils.predictor
-from engines import evaluator as evaluator_module
-from utils import (average_output_metrics, feature_map_saver, reduced_dimensions_visualizer)
-from utils.metrics import triplet_dot_product_accuracy
+import pixel2vec.dataflow
+import pixel2vec.utils
+import pixel2vec.utils.epoch_progress_bar
+import pixel2vec.utils.metrics.loss
+import pixel2vec.utils.predictor
+from pixel2vec.engines import evaluator as evaluator_module
+from pixel2vec.utils import (average_output_metrics, feature_map_saver, reduced_dimensions_visualizer)
+from pixel2vec.utils.metrics import triplet_dot_product_accuracy
 
 
 def create_data_flow(
@@ -30,18 +30,18 @@ def create_data_flow(
     """
     logging.info('load data')
     if mode == 'patches':
-        loaders = dataflow.create_patches_dataflow(root=data_root, **data_flow_params)
+        loaders = pixel2vec.dataflow.create_patches_dataflow(root=data_root, **data_flow_params)
     elif mode == 'images':
-        loaders = dataflow.create_images_dataflow(root=data_root, **data_flow_params)
+        loaders = pixel2vec.dataflow.create_images_dataflow(root=data_root, **data_flow_params)
     elif mode == 'sliced_images':
-        loaders = dataflow.create_sliced_images_dataflow(root=data_root, **data_flow_params)
+        loaders = pixel2vec.dataflow.create_sliced_images_dataflow(root=data_root, **data_flow_params)
     else:
         raise NotImplementedError(f'{mode} mode not implemented')
     return loaders
 
 
 def build_plugins(
-    predictor: utils.predictor.Predictor,
+    predictor: pixel2vec.utils.predictor.Predictor,
     artifacts_dir: str,
     visualization_images_dir: str,
     store_predictions_on_the_end: bool = True,
@@ -64,7 +64,7 @@ def build_plugins(
     Returns:
         list with plugins for trainer - plugins have to be attached after evaluators
     """
-    epoch_progress_bar = utils.epoch_progress_bar.EpochProgressBar(desc='Epochs: ')
+    epoch_progress_bar = pixel2vec.utils.epoch_progress_bar.EpochProgressBar(desc='Epochs: ')
     p_bar = ProgressBar(persist=False, desc='Training epoch: ')
     output_metrics_average_plugin = average_output_metrics.AverageOutputMetrics()
     optional_plugins: List[Any] = []
@@ -114,7 +114,7 @@ def create_metrics(metrics: Iterable[str], loss_fn: Callable[[Any], torch.Tensor
     ret = {}
     for metric in metrics:
         if metric == 'loss':
-            ret[f'{prefix}_{metric}'] = utils.metrics.loss.LossMetric(loss_fn)
+            ret[f'{prefix}_{metric}'] = pixel2vec.utils.metrics.loss.LossMetric(loss_fn)
         elif metric == 'dot_product_accuracy':
             ret[f'{prefix}_{metric}'] = triplet_dot_product_accuracy.TripletDotProductAccuracy()
         else:
@@ -123,7 +123,7 @@ def create_metrics(metrics: Iterable[str], loss_fn: Callable[[Any], torch.Tensor
 
 
 def build_evaluators(
-    predictor: utils.predictor.Predictor,
+    predictor: pixel2vec.utils.predictor.Predictor,
     loss_fn: Callable[[Any], torch.Tensor],
     loaders: Dict[str, Iterable],
     logger: PlotLossesCallback,

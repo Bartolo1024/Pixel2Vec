@@ -2,19 +2,19 @@ name: pixel2vec
 channels:
   - pytorch
   - defaults
+  - nvidia
 dependencies:
   - click
-  - cudatoolkit>=10.2
   - h5py
   - hdf5
   - ignite
-  - numpy
   - pillow
   - pip
-  - python=3.8
-  - pytorch>=1.9.0
+  - python
+  - pytorch-cuda
   - pyyaml
-  - torchvision>=0.10.0
+  - numpy
+  - torchvision
   - tqdm
   - yaml
   - scikit-learn
