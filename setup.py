@@ -18,6 +18,7 @@ else:
     scripts = ["imaginairy/bin/aimg", "imaginairy/bin/imagine"]
     entry_points = None
 
+
 def version():
     this_directory = os.path.abspath(os.path.dirname(__file__))
     with open(os.path.join(this_directory, 'Pixel2Vec/version.py')) as f:
@@ -26,6 +27,7 @@ def version():
         version = version_match.group(1)
 
     return version
+
 
 def readme():
     with open('Readme.md', encoding='utf-8') as f:
@@ -58,13 +60,7 @@ setup(
         'Programming Language :: Python :: 3.10',
     ],
     packages=find_packages(include=("pixel2vec", "pixel2vec.*")),
-    package_data={
-        "pixel2vec": [
-            "configs/*.yaml",
-            "data/*",
-            "experiments/*.yaml"
-        ]
-    },
+    package_data={"pixel2vec": ["configs/*.yaml", "data/*", "experiments/*.yaml"]},
     install_requires=[
         "click",
         "click-help-colors",
