@@ -21,7 +21,7 @@ else:
 
 def version():
     this_directory = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(this_directory, 'Pixel2Vec/version.py')) as f:
+    with open(os.path.join(this_directory, 'pixel2vec/version.py')) as f:
         version_file = f.read()
         version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
         version = version_match.group(1)
