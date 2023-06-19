@@ -4,7 +4,7 @@ A self-supervised feature extraction trained on the single image.
 
 An example use in a preprint:
 
-* Piotr Migdał, Bartłomiej Olechno, Błażej Podgórski, [Level generation and style enhancement - deep learning for game development overview](https://arxiv.org/abs/2107.07397), arXiv:2107.07397.
+- Piotr Migdał, Bartłomiej Olechno, Błażej Podgórski, [Level generation and style enhancement - deep learning for game development overview](https://arxiv.org/abs/2107.07397), arXiv:2107.07397.
 
 ## Installation
 
@@ -26,7 +26,8 @@ conda env create -f .\environment-m1.yaml
 ## Run
 
 To train the SOTA model on the minesweeper image run command:\
-```{bash}
+
+````{bash}
 python -m pixel2vec.train --experiment-file experiments/minesweeper.yaml```
 
 Note: on Windows 10 you want to set in `experiments/[name].yaml` file `num_workers: 0`, otherwise it will be super slow, vide https://github.com/pytorch/pytorch/issues/12831.
@@ -38,7 +39,7 @@ Each data has its own directory, e.g. `data/minesweeper`, which contains one or 
 
 ## Example results
 
-The model was trained on the given Simcity image. All feature vectors were projected into 3d space, and presented as the RGB image. The result is shown on the bottom.  
+The model was trained on the given Simcity image. All feature vectors were projected into 3d space, and presented as the RGB image. The result is shown on the bottom.
 
 ![Input image](./data/examples/sim.png)
 ![PCA](./data/examples/sim_pca.jpg)
@@ -48,3 +49,4 @@ The model was trained on the given Simcity image. All feature vectors were proje
 This project is supported by the EU R&D grant POIR.01.02.00-00-0052/19 for project [GearShift – building the engine of the behavior of wheeled motor vehicles
 and map generation based on artificial intelligence algorithms implemented on the Unreal Engine platform – GAMEINN](https://mapadotacji.gov.pl/projekty/874596/?lang=en).
 
+````
