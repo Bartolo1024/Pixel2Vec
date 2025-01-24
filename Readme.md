@@ -27,8 +27,9 @@ conda env create -f .\environment-m1.yaml
 
 To train the SOTA model on the minesweeper image run command:\
 
-````{bash}
-python -m pixel2vec.train --experiment-file experiments/minesweeper.yaml```
+```{bash}
+python -m pixel2vec.train --experiment-file experiments/minesweeper.yaml
+```
 
 Note: on Windows 10 you want to set in `experiments/[name].yaml` file `num_workers: 0`, otherwise it will be super slow, vide https://github.com/pytorch/pytorch/issues/12831.
 
@@ -48,5 +49,3 @@ The model was trained on the given Simcity image. All feature vectors were proje
 
 This project is supported by the EU R&D grant POIR.01.02.00-00-0052/19 for project [GearShift – building the engine of the behavior of wheeled motor vehicles
 and map generation based on artificial intelligence algorithms implemented on the Unreal Engine platform – GAMEINN](https://mapadotacji.gov.pl/projekty/874596/?lang=en).
-
-````
